@@ -10,6 +10,7 @@ gem "rake"
 
 group :test, :development do
   gem 'rack-test'
+  gem 'factory_girl'
   gem 'minitest'
   gem 'minitest-doc_reporter' # Rspec の様に spec のドキュメントを出力
 end

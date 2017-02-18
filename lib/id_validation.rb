@@ -18,7 +18,7 @@ end
 
 def valid_checksum?(id)
   if id_validation_enable?
-    # hp_id の validation をする場合: config/application.rb に設定あり
+    # hp_id の validation をする場合: models.rb に設定あり
     # Rule for Nagoya East Medical Center
     id1 = id.to_i / 10
     id2 = id.to_i % 10
@@ -38,7 +38,7 @@ def valid_checksum?(id)
     else
       false
     end
-  else  # hp_id の validation をしない場合: config/application.rb に設定あり
+  else  # hp_id の validation をしない場合: models.rb に設定あり
     return true
   end
 end
