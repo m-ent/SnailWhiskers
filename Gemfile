@@ -7,6 +7,7 @@ gem "sinatra-contrib"
 gem "sinatra-activerecord"
 gem "sqlite3"
 gem "rake"
+#gem "thin"
 
 group :test, :development do
   gem 'rack-test'

@@ -3,12 +3,11 @@ FactoryGirl.define do
     hp_id  "19"  # valid hp_id
   end
 
-=begin
   factory :audiogram do
     examdate Time.now
     comment nil
     audiometer "AA-79S"
-    hospital "NEMC"
+    hospital "Hospital_A"
     image_location nil
     manual_input nil
 #    ac_rt_125 
@@ -25,7 +24,6 @@ FactoryGirl.define do
     ac_lt_2k    30
     ac_lt_4k    45
 #    ac_lt_8k 
-=end
 =begin
     ac_rt_125_scaleout 
     ac_rt_250_scaleout 
@@ -118,9 +116,9 @@ FactoryGirl.define do
     mask_bc_lt_4k_type 
     mask_bc_lt_8k_type 
 =end
-=begin
   end
 
+=begin
   factory :tympanogram do
     examdate Time.now
     comment nil
