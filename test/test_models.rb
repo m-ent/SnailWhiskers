@@ -1,7 +1,5 @@
-ENV['RACK_ENV'] = 'test'
+require File.expand_path '../test_helper.rb', __FILE__
 
-require 'minitest/autorun'
-#require 'rack/test'
 require 'factory_girl'
 require './models'
 
@@ -16,12 +14,16 @@ describe Patient do
     end
   end
 
-  if id_validation_enable?
-    describe "validation が有効で(models.rbで設定)、hp_id が invalid の場合" do
-      it "保存できないこと" do
-        patient = FactoryGirl.build(:patient, :hp_id => '123')
+  describe "hp_id が invalid の場合 (現在はid_validationは#{id_validation_enable? ? '有' : '無'}効: models.rbで設定)、" do
+    patient = FactoryGirl.build(:patient, :hp_id => '123')
                                               # hp_id: 123 (invalid)
+    if id_validation_enable?
+      it "保存できないこと" do
         patient.save.wont_equal true
+      end
+    else
+      it "保存できること" do
+        patient.save.must_equal true
       end
     end
   end

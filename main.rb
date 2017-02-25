@@ -13,5 +13,10 @@ class Main < Sinatra::Base
   get '/' do
     'Welcome abord'
   end
+
+  get '/patients' do
+    @patients = Patient.all
+    erb :patients_index
+  end
 end
 

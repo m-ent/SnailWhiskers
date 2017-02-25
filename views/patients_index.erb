@@ -1,0 +1,28 @@
+<h1>Listing Patients</h1>
+
+<%= @patients.length.to_s + " patient#{@patients.length > 1 ? 's' : ''}" %>
+
+<table>
+  <tr>
+    <th>ID</th>
+    <th></th>
+    <th></th>
+  </tr>
+
+<% @patients.each do |patient| %>
+  <tr>
+    <td><%= patient.hp_id %></td>
+    <td><%= "<a href=#{url "/patients/#{patient.id}"}>" %>Show</a>
+    <td><% target = "/patients/#{patient.id}" %>
+        <%= "<form action=\"#{target}\" method=\"POST\">" %>
+        <input type="hidden" name="_method" value="DELETE">
+        <input type="submit" value="Destroy" onclick="return confirm('Are you sure?');">
+        </form>
+    </td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= "<a href=#{url "/patients/new"}>" %>New Patient</a>
