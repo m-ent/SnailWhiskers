@@ -1,0 +1,39 @@
+<h1>ID: <%= reg_id(@patient.hp_id) %></h1>
+
+<!--
+<%# if (count = @patient.audiograms.length) > 0 %>
+  <%# recent = (@patient.audiograms.sort {|a,b| b.examdate <=> a.examdate}).shift(5) %>
+  <%# i = 0 %>
+  <h2 class="exam_title">
+    <%#= link_to "Audiogram#{"s" if count > 1} (#{count} exam#{"s" if count > 1})",\
+	  :controller => "audiograms", :action => "index",\
+          :patient_id => @patient.to_param  %></h2>
+  <table>
+    <tr>
+      <#% recent.each do |a| %>
+        <td id="recent<%#= i %>"><%#= a.examdate.strftime("%Y/%m/%d") %></td>
+	<%# i += 1 %>
+      <%# end %>
+    </tr>
+    <tr>
+      <%# recent.each do |a| %>
+        <td><%#= link_to(image_tag(a.image_location.sub("graphs", "thumbnails")),\
+	        :controller => "audiograms", :action => "show",\
+		:patient_id => @patient.to_param, :id => a.id )%></td>
+      <%# end %>
+    </tr>
+    <tr>
+      <%# recent.each do |a| %>
+        <td>R: <%#= mean("4R", a)[:R] %><br>L: <%#= mean("4R", a)[:L] %></td>
+      <%# end %>
+    </tr>
+
+  </table>
+<%# else %>
+  <h2 class="exam_title">No Audiogram</h2>
+<%# end %>
+</h2>
+-->
+
+<%# = link_to 'Edit', edit_patient_path(@patient) %> 
+<%= "<a href=#{url "/patients"}>" %>Back</a>

@@ -5,10 +5,13 @@ require './main'
 require './lib/id_validation'
 
 describe 'PatientsController' do
+  before do
+    @valid_id = '19'
+  end
 
   # return the minimal set of attributes required to create a valid Patient
   def valid_attributes
-    {:hp_id => valid_id?('19')}
+    {:hp_id => valid_id?(@valid_id)}
   end
 
   # return the minimal set of values that should be in the session
@@ -53,17 +56,29 @@ describe 'PatientsController' do
     end
   end
 
+  describe "GET patients#show (/patients/:id)" do
+    before do
+      @target_hp_id = valid_id?(@valid_id) # 0000000019
+      Patient.where(hp_id: @target_hp_id).delete_all
+      patient = Patient.create!(hp_id: @target_hp_id)
+      get "/patients/#{patient.id}"
+      @response = last_response
+    end
+
+    it "指定された patient が表示されること" do
+      @response.ok?.must_equal true
+      @response.body.must_include "#{@target_hp_id[0..4]}-#{@target_hp_id[5..9]}" # 00000-00019 を含むか
+    end
+
+    it 'patients#index への link があること' do
+      @response.body.must_include "patients>"
+    end
+  end
+
 end
 
 
 =begin
-  describe "GET show" do
-    it "assigns the requested patient as @patient" do
-      patient = Patient.create! valid_attributes
-      get :show, {:id => patient.to_param}, valid_session
-      expect(assigns(:patient)).to eq(patient)
-    end
-  end
 
   describe "GET new" do
     it "assigns a new patient as @patient" do
