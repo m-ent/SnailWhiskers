@@ -24,9 +24,14 @@ class Main < Sinatra::Base
     erb :patients_index
   end
 
+  get '/patients/new' do # patients#new
+    erb :patients_new
+  end
+
   get '/patients/:id' do # patients#show
     @patient = Patient.find(params[:id])
     erb :patients_show
   end
+
 end
 

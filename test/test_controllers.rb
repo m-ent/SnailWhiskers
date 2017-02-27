@@ -75,17 +75,19 @@ describe 'PatientsController' do
     end
   end
 
+  describe "GET patients#new (/patients/new)" do
+    it "hp_id の入力を持ち、post /patients へ遷移する form を持つこと" do
+      get "/patients/new"
+      last_response.body.must_match /form action='\/patients' method='POST'/
+      last_response.body.must_match /input type='text' name='hp_id'/
+    end
+  end
+
 end
 
 
 =begin
 
-  describe "GET new" do
-    it "assigns a new patient as @patient" do
-      get :new, {}, valid_session
-      expect(assigns(:patient)).to be_a_new(Patient)
-    end
-  end
 
   describe "GET edit" do
     it "assigns the requested patient as @patient" do
