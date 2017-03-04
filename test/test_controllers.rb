@@ -30,6 +30,7 @@ describe 'PatientsController' do
 
     it "全ての patient が表示されること" do
       @response.ok?.must_equal true
+      @response.body.must_include "<!-- /patients -->"
       @response.body.must_include "#{@patients.length} patient"
       @patients.each do |patient|
         @response.body.must_include patient.hp_id
@@ -60,13 +61,14 @@ describe 'PatientsController' do
     before do
       @target_hp_id = valid_id?(@valid_id) # 0000000019
       Patient.where(hp_id: @target_hp_id).delete_all
-      patient = Patient.create!(hp_id: @target_hp_id)
-      get "/patients/#{patient.id}"
+      @patient = Patient.create!(hp_id: @target_hp_id)
+      get "/patients/#{@patient.id}"
       @response = last_response
     end
 
     it "指定された patient が表示されること" do
       @response.ok?.must_equal true
+      @response.body.must_include "<!-- /patients/#{@patient.id} -->"
       @response.body.must_include "#{@target_hp_id[0..4]}-#{@target_hp_id[5..9]}" # 00000-00019 を含むか
     end
 
@@ -78,11 +80,56 @@ describe 'PatientsController' do
   describe "GET patients#new (/patients/new)" do
     it "hp_id の入力を持ち、post /patients へ遷移する form を持つこと" do
       get "/patients/new"
+      last_response.body.must_include "<!-- /patients/new -->"
       last_response.body.must_match /form action='\/patients' method='POST'/
       last_response.body.must_match /input type='text' name='hp_id'/
     end
   end
 
+  describe "POST patients#create (/patients)" do
+    describe "valid params を入力した場合" do
+      it "新しく Patient を作成すること" do
+        patient_num = Patient.all.length
+        post "/patients", valid_attributes, valid_session
+        Patient.all.length.must_equal (patient_num + 1)
+      end
+
+      it "redirect されること" do
+        post "/patients", valid_attributes, valid_session
+        last_response.redirect?.must_equal true
+      end
+
+      it "redirect された先が、作成された patient の view であること" do
+        post "/patients", valid_attributes, valid_session
+        follow_redirect!
+        last_response.ok?.must_equal true
+        patient = Patient.last
+        last_response.body.must_include "<!-- /patients/#{patient.id} -->"
+        last_response.body.must_include "#{patient.hp_id[0..4]}-#{patient.hp_id[5..9]}" # 00000-00019 を含むか
+      end
+    end
+
+    describe "valid でない params を入力した場合" do
+      before do
+        def id_validation_enable?  # 設定によらず強制的にvalidationを有効にしておく
+          true
+        end
+      end
+
+      it "patients の 数が増えないこと" do
+        patient_num = Patient.all.length
+        post "/patients", :hp_id => 'invalid id' #, valid_session
+        Patient.all.length.must_equal patient_num
+      end
+
+      it "/patients/new の view を表示すること" do
+        post "/patients", :hp_id => 'invalid id' #, valid_session
+        last_response.ok?.must_equal true
+        last_response.body.must_include "<!-- /patients/new -->"
+      end
+    end
+
+  end
 end
 
 
@@ -97,42 +144,6 @@ end
     end
   end
 
-  describe "POST create" do
-    describe "with valid params" do
-      it "creates a new Patient" do
-        expect {
-          post :create, {:patient => valid_attributes}, valid_session
-        }.to change(Patient, :count).by(1)
-      end
-
-      it "assigns a newly created patient as @patient" do
-        post :create, {:patient => valid_attributes}, valid_session
-        expect(assigns(:patient)).to be_a(Patient)
-        expect(assigns(:patient)).to be_persisted
-      end
-
-      it "redirects to the created patient" do
-        post :create, {:patient => valid_attributes}, valid_session
-        expect(response).to redirect_to(Patient.last)
-      end
-    end
-
-    describe "with invalid params" do
-      it "assigns a newly created but unsaved patient as @patient" do
-        # Trigger the behavior that occurs when invalid params are submitted
-        allow_any_instance_of(Patient).to receive(:save).and_return(false)
-        post :create, {:patient => {}}, valid_session
-        expect(assigns(:patient)).to be_a_new(Patient)
-      end
-
-      it "re-renders the 'new' template" do
-        # Trigger the behavior that occurs when invalid params are submitted
-        allow_any_instance_of(Patient).to receive(:save).and_return(false)
-        post :create, {:patient => {}}, valid_session
-        expect(response).to render_template("new")
-      end
-    end
-  end
 
   describe "PUT update" do
     describe "with valid params" do

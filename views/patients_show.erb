@@ -1,6 +1,7 @@
+<%= "<!-- /patients/#{@patient.id} -->" %>
 <h1>ID: <%= reg_id(@patient.hp_id) %></h1>
 
-<!--
+<% if false %>
 <%# if (count = @patient.audiograms.length) > 0 %>
   <%# recent = (@patient.audiograms.sort {|a,b| b.examdate <=> a.examdate}).shift(5) %>
   <%# i = 0 %>
@@ -33,7 +34,7 @@
   <h2 class="exam_title">No Audiogram</h2>
 <%# end %>
 </h2>
--->
+<% end %>
 
 <%# = link_to 'Edit', edit_patient_path(@patient) %> 
 <%= "<a href=#{url "/patients"}>" %>Back</a>

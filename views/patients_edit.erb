@@ -1,0 +1,29 @@
+<h1>Editing Parient</h1>
+
+<%= "<form action=\"/patients/#{@patient.id}\" method='PATCH'>" %>
+
+  <% if @patient.errors.any? %>
+  <div id="error_explanation">
+    <h2> 
+      <%= "#{@patient.errors.count} error" %>
+      <% if @patient.errors.count > 1 %><%= 's' %><% end %> 
+      prohibited this article from being saved:</h2>
+    <ul>
+    <% @patient.errors.full_messages.each do |msg| %>
+      <li><%= msg %></li>
+    <% end %>
+    </ul>
+  </div>
+  <% end %>
+
+  <p>
+    Hp_id<br>
+      <%= "<input type=\"text\" name=\"hp_id\" value=\"#{@patient.hp_id}\">" %>
+  </p>
+
+  <p>
+    <input type='submit' value="Save Patient">
+  </p>
+</form>
+
+<%= "<a href=#{url '/patients'}>" %>Back</a>

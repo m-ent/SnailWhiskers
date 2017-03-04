@@ -33,5 +33,13 @@ class Main < Sinatra::Base
     erb :patients_show
   end
 
+  post '/patients' do # patients#create
+    @patient = Patient.new(params)
+    if @patient.save
+      redirect to("/patients/#{@patient.id}")
+    else
+      erb :patients_new
+    end
+  end
 end
 
