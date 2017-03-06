@@ -10,6 +10,7 @@ class Main < Sinatra::Base
   configure :development do
     register Sinatra::Reloader
   end
+  enable :method_override
 
   helpers do
     include Helpers
@@ -40,6 +41,29 @@ class Main < Sinatra::Base
     else
       erb :patients_new
     end
+  end
+
+  get '/patients/:id/edit' do # patients#edit
+    @patient = Patient.find(params[:id])
+    erb :patients_edit
+  end
+
+  put '/patients/:id' do # patient#update
+    @patient = Patient.find(params[:id])
+    if @patient.update(select_params(params, [:hp_id]))
+      redirect to("/patients/#{@patient.id}")
+    else
+      erb :patients_edit
+    end
+  end
+
+  private
+  def select_params(params, keys)
+    h = Hash.new
+    keys.each do |key|
+      h[key] = params[key]
+    end
+    return h
   end
 end
 

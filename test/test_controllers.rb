@@ -6,12 +6,13 @@ require './lib/id_validation'
 
 describe 'PatientsController' do
   before do
-    @valid_id = '19'
+    @valid_id1 = '19'
+    @valid_id2 = '27' #35 43 51 60 78 86 94
   end
 
   # return the minimal set of attributes required to create a valid Patient
   def valid_attributes
-    {:hp_id => valid_id?(@valid_id)}
+    {:hp_id => valid_id?(@valid_id1)}
   end
 
   # return the minimal set of values that should be in the session
@@ -59,7 +60,7 @@ describe 'PatientsController' do
 
   describe "GET patients#show (/patients/:id)" do
     before do
-      @target_hp_id = valid_id?(@valid_id) # 0000000019
+      @target_hp_id = valid_id?(@valid_id1) # 0000000019
       Patient.where(hp_id: @target_hp_id).delete_all
       @patient = Patient.create!(hp_id: @target_hp_id)
       get "/patients/#{@patient.id}"
@@ -128,66 +129,76 @@ describe 'PatientsController' do
         last_response.body.must_include "<!-- /patients/new -->"
       end
     end
-
   end
+
+  describe "GET patients#edit (/patients/:id/edit)" do
+    before do
+      @patient = Patient.create!(hp_id: valid_id?(@valid_id1)) # 0000000019
+      get "/patients/#{@patient.id}/edit"
+      @response = last_response
+    end
+
+    it "指定された patient の編集画面が得られること" do
+      @response.ok?.must_equal true
+      @response.body.must_include "<!-- /patients/#{@patient.id}/edit -->"
+    end
+
+    it "post /patients へ遷移する form を持つこと" do
+      @response.body.must_match Regexp.new("form action=\"/patients/#{@patient.id}\" method=\"POST\"") 
+      @response.body.must_match Regexp.new("name=\"_method\" value=\"PUT\"") 
+      @response.body.must_match Regexp.new("input type=\"text\" name=\"hp_id\"")
+    end
+  end
+
+  describe "PUT patiets#update (/patients/:id)" do
+    describe "valid params を入力した場合" do
+      it "指定された patient が update されること" do
+        patient = Patient.create!(hp_id: valid_id?(@valid_id1)) # 0000000019
+        put "/patients/#{patient.id}", params={hp_id: valid_id?(@valid_id2)} # 000000027
+        patient_reloaded = Patient.find(patient.id)
+        patient_reloaded.hp_id.wont_equal patient.hp_id
+      end
+
+      it "redirect されること" do
+        patient = Patient.create! valid_attributes
+        put "/patients/#{patient.id}", params={hp_id: patient.hp_id}
+        last_response.redirect?.must_equal true
+      end
+
+      it "redirect された先が、指定された patient の view であること" do
+        patient = Patient.create! valid_attributes
+        put "/patients/#{patient.id}", params={hp_id: patient.hp_id}
+        follow_redirect!
+        last_response.ok?.must_equal true
+        last_response.body.must_include "<!-- /patients/#{patient.id} -->"
+      end
+    end
+
+    describe "valid でない params を入力した場合" do
+      it "指定された patient が update されないこと" do
+        patient = Patient.create!(hp_id: valid_id?(@valid_id1)) # 0000000019
+        put "/patients/#{patient.id}", params={hp_id: 'invalid id'}
+        patient_reloaded = Patient.find(patient.id)
+        patient_reloaded.hp_id.must_equal patient.hp_id
+      end
+
+      it "/patients/:id/edit の view を表示すること" do
+        patient = Patient.create! valid_attributes
+        put "/patients/#{patient.id}", params={hp_id: 'invalid id'}
+        last_response.ok?.must_equal true
+        last_response.body.must_include "<!-- /patients/#{patient.id}/edit -->"
+      end
+    end
+  end
+
 end
 
 
 =begin
 
 
-  describe "GET edit" do
-    it "assigns the requested patient as @patient" do
-      patient = Patient.create! valid_attributes
-      get :edit, {:id => patient.to_param}, valid_session
-      expect(assigns(:patient)).to eq(patient)
-    end
-  end
 
 
-  describe "PUT update" do
-    describe "with valid params" do
-      it "updates the requested patient" do
-        patient = Patient.create! valid_attributes
-        # Assuming there are no other patients in the database, this
-        # specifies that the Patient created on the previous line
-        # receives the :update_attributes message with whatever params are
-        # submitted in the request.
-        expect_any_instance_of(Patient).to receive(:update).with({'hp_id' => 'params'})
-        put :update, {:id => patient.to_param, :patient => {'hp_id' => 'params'}}, valid_session
-      end
-
-      it "assigns the requested patient as @patient" do
-        patient = Patient.create! valid_attributes
-        put :update, {:id => patient.to_param, :patient => valid_attributes}, valid_session
-        expect(assigns(:patient)).to eq(patient)
-      end
-
-      it "redirects to the patient" do
-        patient = Patient.create! valid_attributes
-        put :update, {:id => patient.to_param, :patient => valid_attributes}, valid_session
-        expect(response).to redirect_to(patient)
-      end
-    end
-
-    describe "with invalid params" do
-      it "assigns the patient as @patient" do
-        patient = Patient.create! valid_attributes
-        # Trigger the behavior that occurs when invalid params are submitted
-        allow_any_instance_of(Patient).to receive(:save).and_return(false)
-        put :update, {:id => patient.to_param, :patient => {}}, valid_session
-        expect(assigns(:patient)).to eq(patient)
-      end
-
-      it "re-renders the 'edit' template" do
-        patient = Patient.create! valid_attributes
-        # Trigger the behavior that occurs when invalid params are submitted
-        allow_any_instance_of(Patient).to receive(:save).and_return(false)
-        put :update, {:id => patient.to_param, :patient => {}}, valid_session
-        expect(response).to render_template("edit")
-      end
-    end
-  end
 
   describe "DELETE destroy" do
     it "destroys the requested patient" do

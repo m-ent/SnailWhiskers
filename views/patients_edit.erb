@@ -1,6 +1,8 @@
+<%= "<!-- /patients/#{@patient.id}/edit -->" %>
 <h1>Editing Parient</h1>
 
-<%= "<form action=\"/patients/#{@patient.id}\" method='PATCH'>" %>
+<%= "<form action=\"/patients/#{@patient.id}\" method=\"POST\">" %>
+  <input type="hidden" name="_method" value="PUT">
 
   <% if @patient.errors.any? %>
   <div id="error_explanation">
