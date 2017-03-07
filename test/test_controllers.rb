@@ -215,55 +215,52 @@ describe 'PatientsController' do
     end
   end
 
-end
-
-
-=begin
-
-
-
-
-
-
-  describe "GET by_hp_id" do
-    context "validな hp_idで requestした場合" do
+  describe "GET patients#by_hp_id (/patients/by_hp_id/:hp_id)" do
+    describe "validな hp_idで requestした場合" do
       before do
+        target_hp_id = valid_id?(@valid_id1) # 0000000019
+        Patient.where(hp_id: target_hp_id).delete_all
         @patient = Patient.create! valid_attributes
         @hp_id = @patient.hp_id
-        get :by_hp_id, {:hp_id => @hp_id}, valid_session
+        get "/patients/by_hp_id/#{@hp_id}", valid_session
       end
 
-      it "正しく @patientとしてassignされること" do
-        expect(assigns(:patient)).to eq(@patient)
+      it "redirect されること" do
+        last_response.redirect?.must_equal true
       end
 
-      it "redirects to the patient" do
-        expect(response).to redirect_to(@patient)
+      it "redirect 先が、指定の patient の view であること" do
+        follow_redirect!
+        last_response.ok?.must_equal true
+        last_response.body.must_include "<!-- /patients/#{@patient.id} -->"
+        last_response.body.must_include "#{@hp_id[0..4]}-#{@hp_id[5..9]}" # 00000-00019 を含むか
       end
     end
 
     it "存在しない、validな hp_idで requestした場合、HTTP status code 404を返すこと" do
+      target_hp_id = valid_id?(@valid_id1) # 0000000019
+      Patient.where(hp_id: target_hp_id).delete_all
       patient = Patient.create! valid_attributes
       hp_id = patient.hp_id
       patient.delete
-      get :by_hp_id, {:hp_id => hp_id}, valid_session
-      expect(response.status).to be(404)
+      get "/patients/by_hp_id/#{@hp_id}", valid_session
+      last_response.status.must_equal 404
     end
 
-    if id_validation_enable?
-      it "(以前のsystemでは)invalidな hp_idで requestした場合、HTTP status code 400を返すこと" do
-        @invalid_hp_id = 18
-        get :by_hp_id, {:hp_id => @invalid_hp_id}, valid_session
-        expect(response.status).to be(400)
+    it "validation 有効な時に invalid な hp_id で request した場合は HTTP status code 400を返すこと" do
+      def id_validation_enable?  # 設定によらず強制的に validation を有効にしておく
+        true
       end
-    else
-      it "(以前のsystemでは)invalidな hp_idで requestした場合も、HTTP status code 400を返さないこと" do
-        @invalid_hp_id = 18
-        get :by_hp_id, {:hp_id => @invalid_hp_id}, valid_session
-        expect(response.status).not_to be(400)
-      end
+      @invalid_hp_id = 18
+      get "/patients/by_hp_id/#{@invalid_hp_id}", valid_session
+      last_response.status.must_equal 400
     end
   end
+
+end
+
+
+=begin
 
   describe "POST direct_create" do
     # POST /patients/direct_create

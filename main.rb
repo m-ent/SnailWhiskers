@@ -63,6 +63,19 @@ class Main < Sinatra::Base
     redirect to("/patients")
   end
 
+  get '/patients/by_hp_id/:hp_id' do #patients#by_hp_id
+    if valid_id?(params[:hp_id]) 
+      @patient = Patient.where(hp_id: params[:hp_id]).take
+      if @patient
+        redirect to("/patients/#{@patient.id}")
+      else
+        404  # not found
+      end
+    else
+      400  # bad request
+    end
+  end
+
   private
   def select_params(params, keys)
     h = Hash.new
