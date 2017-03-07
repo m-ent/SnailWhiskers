@@ -57,6 +57,12 @@ class Main < Sinatra::Base
     end
   end
 
+  delete '/patients/:id' do # patients#destroy
+    @patient = Patient.find(params[:id])
+    @patient.destroy
+    redirect to("/patients")
+  end
+
   private
   def select_params(params, keys)
     h = Hash.new

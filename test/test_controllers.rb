@@ -191,6 +191,30 @@ describe 'PatientsController' do
     end
   end
 
+  describe "DELETE patients#destroy (/patients/:id)" do
+    before do
+      @patient = Patient.create! valid_attributes
+    end
+
+    it "指定された patient を削除すること" do
+      patient_num = Patient.all.length
+      delete "/patients/#{@patient.id}"
+      Patient.all.length.must_equal (patient_num - 1)
+    end
+
+    it "redirect されること" do
+      delete "/patients/#{@patient.id}"
+      last_response.redirect?.must_equal true
+    end
+
+    it "redirect 先が、全ての patients のリストであること" do
+      delete "/patients/#{@patient.id}"
+      follow_redirect!
+      last_response.ok?.must_equal true
+      last_response.body.must_include "<!-- /patients -->"
+    end
+  end
+
 end
 
 
@@ -200,20 +224,6 @@ end
 
 
 
-  describe "DELETE destroy" do
-    it "destroys the requested patient" do
-      patient = Patient.create! valid_attributes
-      expect {
-        delete :destroy, {:id => patient.to_param}, valid_session
-      }.to change(Patient, :count).by(-1)
-    end
-
-    it "redirects to the patients list" do
-      patient = Patient.create! valid_attributes
-      delete :destroy, {:id => patient.to_param}, valid_session
-      expect(response).to redirect_to(patients_url)
-    end
-  end
 
   describe "GET by_hp_id" do
     context "validな hp_idで requestした場合" do
