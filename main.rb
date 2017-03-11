@@ -48,7 +48,7 @@ class Main < Sinatra::Base
     erb :patients_edit
   end
 
-  put '/patients/:id' do # patient#update
+  put '/patients/:id' do # patients#update
     @patient = Patient.find(params[:id])
     if @patient.update(select_params(params, [:hp_id]))
       redirect to("/patients/#{@patient.id}")
@@ -63,7 +63,7 @@ class Main < Sinatra::Base
     redirect to("/patients")
   end
 
-  get '/patients/by_hp_id/:hp_id' do #patients#by_hp_id
+  get '/patients/by_hp_id/:hp_id' do # patients#by_hp_id
     if valid_id?(params[:hp_id]) 
       @patient = Patient.where(hp_id: params[:hp_id]).take
       if @patient
@@ -75,6 +75,27 @@ class Main < Sinatra::Base
       400  # bad request
     end
   end
+
+#  get '/patients/:patient_id/audiograms' do # audiograms#index
+#  end
+
+#  get '/patients/:patient_id/audiograms/new' do # audiograms#new
+#  end
+
+#  post '/patients/:patient_id/audiograms' do # audiograms#create
+#  end
+
+#  get '/patients/:patient_id/audiograms/:id' do # audiograms#show
+#  end
+
+#  get '/patients/:patient_id/audiograms/:id/edit' do # audiograms#edit
+#  end
+
+#  put '/patients/:patient_id/audiograms/:id' do # audiograms#update
+#  end
+
+#  delete '/patients/:patient_id/audiograms/:id' do # audiograms#destroy
+#  end
 
   private
   def select_params(params, keys)
