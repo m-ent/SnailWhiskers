@@ -76,8 +76,11 @@ class Main < Sinatra::Base
     end
   end
 
-#  get '/patients/:patient_id/audiograms' do # audiograms#index
-#  end
+  get '/patients/:patient_id/audiograms' do # audiograms#index
+    @patient = Patient.find(params[:patient_id])
+    @audiograms = @patient.audiograms.order('examdate DESC').to_a
+    erb :audiograms_index
+  end
 
 #  get '/patients/:patient_id/audiograms/new' do # audiograms#new
 #  end

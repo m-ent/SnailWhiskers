@@ -1,0 +1,57 @@
+<%= "<!-- /patients/#{@patient.id}/audiograms -->" %>
+<% require './helpers' %>
+
+<h1>Listing <%= pluralize(@patient.audiograms.length, "audiogram") %> for 
+<%= "<a href=#{url "/patients/#{@patient.id}"}>#{reg_id(@patient.hp_id)}" %></a></h1>
+
+<table>
+  <tr class="colored">
+    <th></th>
+    <th>検査日 Examdate</th>
+    <th>検査図 Thumbnail</th>
+    <th>4分法平均 mean4</th>
+    <th>コメント Comment</th>
+    <th></th>
+  </tr>
+
+<%# form_tag :action => 'select' do %>
+<% cycle ? cycle : '' %> 
+  <!-- cycle は true, falseを交互に出力する。ここで次にtrueが出力される状態にしておく -->
+<% @audiograms.each do |audiogram| %>
+  <tr class="<%= cycle ? "" : "colored" %>">
+    <td><%#= check_box_tag "selected[]", audiogram.id %><br><a href="#search" %>▼</a></td>
+    <td><%= audiogram.examdate.strftime("%Y/%m/%d") %><br><%= audiogram.examdate.strftime("%X") %></td>
+    <td><%= "<a href=#{url "/patients/#{@patient.id}/audiograms/#{audiogram.id}"}>" %>
+      <%= image_tag(audiogram.image_location.sub("graphs", "thumbnails")) %></a></td>
+    <td>R: <%= mean("4R", audiogram)[:R] %><br>L: <%= mean("4R", audiogram)[:L] %></td>
+      <!-- helper method is put at app/helpers/audiograms_helper.rb -->
+    <td><%= audiogram.comment %></td>
+    <!-- td><%#= audiogram.manual_input %></td -->
+    <td><%= "<a href=#{url "/patients/#{@patient.id}/audiograms/#{audiogram.id}"}>" %>Show</a><br>
+        <%= "<a href=#{url "/patients/#{@patient.id}/audiograms/#{audiogram.id}/edit"}>" %>Edit</a><br>
+        <% target = "/patients/#{@patient.id}/audiograms/#{audiogram.id}" %>
+          <%= "<form action=\"#{target}\" method=\"POST\">" %>
+          <input type="hidden" name="_method" value="DELETE">
+          <input type="submit" value="Destroy" onclick="return confirm('Are you sure?');">
+          </form>
+    </td>
+    </tr>
+<% end %>
+</table>
+
+<a name="search"></a>
+<%#= submit_tag 'select 2 audiograms' %>
+<%# end %>
+
+<br />
+<!-- hr -->
+
+<%= "<a href=#{url "/patients/#{@patient.id}/audiograms/new"}>" %>
+  <%= "New audiogram for ID:#{reg_id(@patient.hp_id)}" %></a>
+
+<%# form_tag :action => 'search' do %>
+  <%#= text_field "condition", "key" %>
+  <%#= submit_tag 'Search' %>
+<%# end %>
+
+<%= "<a href=#{url "/patients/#{@patient.id}"}>" %>Examination List</a>

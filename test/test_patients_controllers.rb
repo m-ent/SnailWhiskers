@@ -52,9 +52,7 @@ describe 'PatientsController' do
     end
 
     it 'patients#new への link があること' do
-      @patients.each do |patient|
-        @response.body.must_include "patients/new"
-      end
+      @response.body.must_include "patients/new"
     end
   end
 
@@ -257,9 +255,6 @@ describe 'PatientsController' do
     end
   end
 
-end
-
-
 =begin
 
   describe "POST direct_create" do
@@ -447,8 +442,6 @@ end
     end
   end
 
-end
-
-
-
 =end
+
+end

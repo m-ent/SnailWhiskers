@@ -1,11 +1,30 @@
 module Helpers
+  def pluralize(amount, noun)
+    irregular = {'datum' => 'data',
+                 'person' => 'people'}
+    if amount > 1
+      "#{amount} #{irregular.has_key?(noun) ? irregular[noun] : noun + 's'}"
+    else
+      "#{amount == 1 ? 1 : "no"} #{noun}"
+    end
+  end
+
+  def cycle  # returns true, false, true, false, ...
+    @state ||= false
+    @state = not(@state)
+    @state
+  end
+
+  def image_tag(img_file)
+    "<img alt=\"#{img_file}\" src=\"#{img_file}\" />"
+  end
+
   def reg_id(id)
     id = id[0..9] if id.length > 10
     r_id = "0" * (10-id.length) + id
     return "#{r_id[0..4]}-#{r_id[5..9]}" # xxxxx-xxxxx の形式
   end
 
-=begin
   def mean(mode, audiogram)
     a = {:r5 => audiogram.ac_rt_500, :r1 => audiogram.ac_rt_1k,\
          :r2 => audiogram.ac_rt_2k,  :r4 => audiogram.ac_rt_4k,\
@@ -24,8 +43,8 @@ module Helpers
       result_R = (a[:r5] + 2 * a[:r1] + 2 * a[:r2] + a[:r4])/6.0 rescue "--"
       result_L = (a[:l5] + 2 * a[:l1] + 2 * a[:l2] + a[:l4])/6.0 rescue "--"
     end
-    result_R = round1(result_R) if result_R.class == Float
-    result_L = round1(result_L) if result_L.class == Float
+    result_R = (result_R).round(1) if result_R.class == Float
+    result_L = (result_L).round(1) if result_L.class == Float
     return {:R => result_R, :L => result_L}
   end
 
@@ -56,10 +75,4 @@ module Helpers
     end
     return result
   end
-
-  def round1(r)  # 小数点1位で四捨五入
-    return (r * 10.0).round / 10.0
-  end
-=end
-
 end
