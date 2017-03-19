@@ -7,6 +7,16 @@ require './helpers'
 
 class Main < Sinatra::Base
   register Sinatra::ActiveRecordExtension
+  configure do
+    case settings.environment
+    when :production
+      ENV['RACK_ENV'] = "production"
+    when :test
+      ENV['RACK_ENV'] = "test"
+    else
+      ENV['RACK_ENV'] = "development"
+    end
+  end
   configure :development do
     register Sinatra::Reloader
   end
