@@ -1,0 +1,1 @@
+Font.png: 10x15 per font /Verdana 12px /Gimp2

@@ -51,3 +51,9 @@ build-iPhoneSimulator/
 
 # Ignore the default SQLite database.
 /db/*.sqlite3
+
+# Ignore audiogram image files
+/assets/images
+
+# Ignore Syncthing files
+.syncthing.*

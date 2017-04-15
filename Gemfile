@@ -7,6 +7,7 @@ gem "sinatra-contrib"
 gem "sinatra-activerecord"
 gem "sqlite3"
 gem "rake"
+gem "chunky_png", ">=1.2.8"
 #gem "thin"
 
 group :test, :development do

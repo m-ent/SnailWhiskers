@@ -85,52 +85,72 @@ describe 'AudiogramsController' do
     end
   end
 
-=begin
-#----------------------------------------------
-  describe "GET show" do
+  describe "GET audiogram#show (/patients/:patient_id/audiograms/:id)" do
     before do
       @audiogram = Audiogram.create! valid_attributes
+      @audiogram.ac_rt_500, @audiogram.ac_rt_1k, @audiogram.ac_rt_2k =  0, 10, 20
+      @audiogram.ac_lt_500, @audiogram.ac_lt_1k, @audiogram.ac_lt_2k = 40, 60, 70
       @audiogram.examdate = Time.now
       exam_year = @audiogram.examdate.strftime("%Y")
-      base_dir = "#{Rails.env}/graphs/#{exam_year}"
+      base_dir = "#{ENV['RACK_ENV']}/graphs/#{exam_year}"
       @audiogram.image_location = "#{base_dir}/#{@audiogram.examdate.strftime("%Y%m%d-%H%M%S")}.png"
-      image_root = "app/assets/images"
-      image_dir = "#{Rails.root}/#{image_root}/#{Rails.env}/graphs/#{exam_year}" 
-      @image_file = "#{Rails.root}/#{image_root}/#{@audiogram.image_location}"
+      app_root = File.dirname(app.app_file)
+      image_root = "assets/images"
+      image_dir = "#{app_root}/#{image_root}/#{base_dir}" 
+      @image_file = "#{app_root}/#{image_root}/#{@audiogram.image_location}"
       FileUtils.makedirs(image_dir) if not File.exists?(image_dir)
-
       File::delete(@image_file) if File.exist?(@image_file)
       File::open(@image_file, "w") do |f|
         f.write (@test_str = "test_string")
       end
       @patient.audiograms << @audiogram
+      get "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
+      @response = last_response
     end
 
-    it "assigns the requested audiogram as @audiogram" do
-      get :show, {:patient_id => @patient.to_param, :id => @audiogram.to_param}, valid_session
-      expect(assigns(:audiogram)).to eq(@audiogram)
+    it "指定された audiogram が表示されること" do
+      @response.ok?.must_equal true
+      @response.body.must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id} -->"
+      @response.body.must_include @audiogram.examdate.to_s
+    end
+
+    it "4分法平均値が表示されること" do
+      @response.body.must_include '10.0'
+      @response.body.must_include '57.5'
+    end
+
+    it 'audiogram のコメントが編集できること' do
+      @response.body.must_include "patients/#{@patient.id}/audiograms/#{@audiogram.id}"
+      @response.body.must_include '<input type="hidden" name="_method" value="PUT">'
+      @response.body.must_include '<input type="text" name="comment"'
+      @response.body.must_include '<input type="submit"'
+    end
+
+    it '印刷ボタンが表示されること' do
+      @response.body.must_match /<input type.+button.+onclick.+print()/
+    end
+
+    it 'audiogram 一覧 (audiograms#index) への link があること' do
+      @response.body.must_include "patients/#{@patient.id}/audiograms"
     end
 
     it "聴検の画像が保存されている場合、画像が更新されないこと" do
-      get :show, {:patient_id => @patient.to_param, :id => @audiogram.to_param}, valid_session
       content = String.new
       File::open(@image_file) do |f|
         content = f.read
       end
-      expect(content).to eq @test_str
+      content.must_equal @test_str
     end
 
     it "聴検の画像が保存されていない場合、画像を作成すること" do
-      @audiogram.image_location = "DummyImageLocation"
-      @audiogram.save
-      expect(@audiogram.image_location).to eq "DummyImageLocation"
-      get :show, {:patient_id => @patient.to_param, :id => @audiogram.to_param}, valid_session
-      expect(File.exist?(@image_file)).to be true
-      @audiogram.reload
-      expect(@audiogram.image_location).not_to eq "DummyImageLocation"
+      File::delete(@image_file) if File.exist?(@image_file)
+      get "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
+      File.exist?(@image_file).must_equal true
     end
   end
 
+=begin
+#----------------------------------------------
   describe "GET new" do
     it "assigns a new audiogram as @audiogram" do
       get :new, {:patient_id => @patient.to_param}, valid_session

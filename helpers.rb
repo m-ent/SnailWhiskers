@@ -19,6 +19,11 @@ module Helpers
     "<img alt=\"#{img_file}\" src=\"#{img_file}\" />"
   end
 
+  def h(text)
+    # Ref: How do I escape HTML? http://www.sinatrarb.com/faq.html#escape_html
+    Rack::Utils.escape_html(text)
+  end
+
   def reg_id(id)
     id = id[0..9] if id.length > 10
     r_id = "0" * (10-id.length) + id

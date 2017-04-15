@@ -1,0 +1,87 @@
+<%= "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id} -->" %>
+
+<p id="notice"><#%= notice %></p>
+
+<h1>ID: <%=h reg_id(@patient.hp_id) %>
+<%= "<a href=#{url "/patients/#{@patient.id}/audiograms"}>" %>[結果一覧へ]</a>
+検査日: <%=h @audiogram.examdate %> / 修正日: <%=h @audiogram.updated_at %><br />
+オージオメータ: <%=h @audiogram.audiometer %>
+
+<table>
+<tr><td colspan="9"><%= image_tag(@audiogram.image_location) %></td>
+    <td rowspan="1">
+      <table>
+      <tr><th colspan="2">平均値 mean</th></tr>
+      <tr><th colspan="2">3分法</th></tr>
+      <tr><th>Rt:</th><td><%=h mean("3", @audiogram)[:R] %></td></tr>
+      <tr><th>Lt:</th><td><%=h mean("3", @audiogram)[:L] %></td></tr>
+      <tr><th colspan="2"></th></tr>
+      <% mean4 = mean("4", @audiogram) %>
+      <% mean4R = mean("4R", @audiogram) %>
+      <% mean4_match = (mean4 == mean4R) %>
+      <tr><th colspan="2">4分法<% if not mean4_match %><br>(cut offなし)<% end %></th></tr>
+      <tr><th>Rt:</th><td><%=h mean4[:R] %>
+                          <%=h "(#{mean4R[:R]})" if not mean4_match %></td></tr>
+      <tr><th>Lt:</th><td><%=h mean4[:L] %>
+                          <%=h "(#{mean4R[:L]})" if not mean4_match %></td></tr>
+      <tr><th colspan="2"></th></tr>
+      <tr><th colspan ="2">6分法</th></tr>
+      <tr><th>Rt:</th><td><%=h mean("6", @audiogram)[:R] %></td></tr>
+      <tr><th>Lt:</th><td><%=h mean("6", @audiogram)[:L] %></td></tr>
+      </table>
+</td></tr>
+<tr><th colspan="9">マスキング条件</th> <th>検査コメント</th></tr>
+<tr><th>mode</th> <th>side</th> <th>125Hz</th> <th>250Hz</th> <th>500Hz</th> 
+                                 <th>1kHz</th> <th>2kHz</th> <th>4kHz</th> <th>8kHz</th>
+    <td rowspan="5">
+      <%= "<form action=\"/patients/#{@patient.id}/audiograms/#{@audiogram.id}\" method=\"POST\">" %>
+        <input type="hidden" name="_method" value="PUT">
+        <div class="field">
+          <%= "<input type=\"text\" name=\"comment\" value=\"#{@audiogram.comment}\">" %>
+        </div>
+        <div class="actions">
+          <input type="submit" value="コメント更新">
+        </div>
+      </form>
+    </td></tr>
+<tr><td>Air</td> <td>Rt</td>
+    <td><%=h @audiogram.mask_ac_rt_125.round if @audiogram.mask_ac_rt_125 %></td>
+    <td><%=h @audiogram.mask_ac_rt_250.round if @audiogram.mask_ac_rt_250 %></td>
+    <td><%=h @audiogram.mask_ac_rt_500.round if @audiogram.mask_ac_rt_500 %></td>
+    <td><%=h @audiogram.mask_ac_rt_1k.round if @audiogram.mask_ac_rt_1k %></td>
+    <td><%=h @audiogram.mask_ac_rt_2k.round if @audiogram.mask_ac_rt_2k %></td>
+    <td><%=h @audiogram.mask_ac_rt_4k.round if @audiogram.mask_ac_rt_4k %></td>
+    <td><%=h @audiogram.mask_ac_rt_8k.round if @audiogram.mask_ac_rt_8k %></td></tr>
+<tr><td></td> <td>Lt</td>
+    <td><%=h @audiogram.mask_ac_lt_125.round if @audiogram.mask_ac_lt_125 %></td>
+    <td><%=h @audiogram.mask_ac_lt_250.round if @audiogram.mask_ac_lt_250 %></td>
+    <td><%=h @audiogram.mask_ac_lt_500.round if @audiogram.mask_ac_lt_500 %></td>
+    <td><%=h @audiogram.mask_ac_lt_1k.round if @audiogram.mask_ac_lt_1k %></td>
+    <td><%=h @audiogram.mask_ac_lt_2k.round if @audiogram.mask_ac_lt_2k %></td>
+    <td><%=h @audiogram.mask_ac_lt_4k.round if @audiogram.mask_ac_lt_4k %></td>
+    <td><%=h @audiogram.mask_ac_lt_8k.round if @audiogram.mask_ac_lt_8k %></td></tr>
+<tr><td>Bone</td> <td>Rt</td>
+    <td></td>
+    <td><%=h @audiogram.mask_bc_rt_250.round if @audiogram.mask_bc_rt_250 %></td>
+    <td><%=h @audiogram.mask_bc_rt_500.round if @audiogram.mask_bc_rt_500 %></td>
+    <td><%=h @audiogram.mask_bc_rt_1k.round if @audiogram.mask_bc_rt_1k %></td>
+    <td><%=h @audiogram.mask_bc_rt_2k.round if @audiogram.mask_bc_rt_2k %></td>
+    <td><%=h @audiogram.mask_bc_rt_4k.round if @audiogram.mask_bc_rt_4k %></td>
+    <td><%=h @audiogram.mask_bc_rt_8k.round if @audiogram.mask_bc_rt_8k %></td></tr>
+<tr><td></td> <td>Lt</td>
+    <td></td>
+    <td><%=h @audiogram.mask_bc_lt_250.round if @audiogram.mask_bc_lt_250 %></td>
+    <td><%=h @audiogram.mask_bc_lt_500.round if @audiogram.mask_bc_lt_500 %></td>
+    <td><%=h @audiogram.mask_bc_lt_1k.round if @audiogram.mask_bc_lt_1k %></td>
+    <td><%=h @audiogram.mask_bc_lt_2k.round if @audiogram.mask_bc_lt_2k %></td>
+    <td><%=h @audiogram.mask_bc_lt_4k.round if @audiogram.mask_bc_lt_4k %></td>
+    <td><%=h @audiogram.mask_bc_lt_8k.round if @audiogram.mask_bc_lt_8k %></td></tr>
+</table>
+
+<%=h @audiogram.hospital %>
+
+<p>
+<form name="Form1" style="margin:1ex">
+    <input type="button" name="PrintButton" value="印刷" onclick="print()"/>
+</form>
+<#%= link_to '検査一覧へ to Index', patient_audiograms_path(@patient) %> <br>
