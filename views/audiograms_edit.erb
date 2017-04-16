@@ -1,0 +1,11 @@
+<%= "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit -->" %>
+<h1>Editing Audiogram</h1>
+
+<%= "<form action=\"/patients/#{@patient.id}/audiograms/#{@audiogram.id}\" method=\"POST\">" %>
+  <input type="hidden" name="_method" value="PUT">
+
+  <%= erb :audiograms_form %>
+
+</form>
+
+<%= "<a href=#{url "/patients#{@patient.id}/audiograms"}>" %>Back</a>

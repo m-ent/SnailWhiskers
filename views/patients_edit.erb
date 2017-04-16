@@ -7,8 +7,7 @@
   <% if @patient.errors.any? %>
   <div id="error_explanation">
     <h2> 
-      <%= "#{@patient.errors.count} error" %>
-      <% if @patient.errors.count > 1 %><%= 's' %><% end %> 
+      <%= pluralize(@patient.errors.count, "error") %>
       prohibited this article from being saved:</h2>
     <ul>
     <% @patient.errors.full_messages.each do |msg| %>

@@ -9,8 +9,9 @@ FactoryGirl.find_definitions
 describe 'AudiogramsController' do
   before do
     @patient = FactoryGirl.create(:patient)
-    @right_auth = 'Basic ' + Base64::encode64("audioadmin:audioadmin")
-    @wrong_auth = 'Basic ' + Base64::encode64("wrong_name:wrong_password")
+    @right_user = "audioadmin"
+    @right_pw = "audioadmin"
+    @wrong_pw = "wrong_password"
   end
 
   # return the minimal set of attributes required to create a valid Audiogram
@@ -149,6 +150,47 @@ describe 'AudiogramsController' do
     end
   end
 
+  describe "GET audiogram#edit (/patients/:patient_id/audiograms/:id/edit)" do
+    before do
+      @audiogram = Audiogram.create! valid_attributes
+      @patient.audiograms << @audiogram
+    end
+
+    describe "basic認証をpassする場合" do
+      before do
+        basic_authorize @right_user, @right_pw
+        get "/patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit"
+        @response = last_response
+      end
+
+      it "指定された patient, audiogram の編集画面が得られること" do
+        @response.ok?.must_equal true
+        @response.body.must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit -->"
+      end
+
+      it "post /patients へ遷移する form を持つこと" do
+        @response.body.must_match \
+          Regexp.new("form action=\"/patients/#{@patient.id}/audiograms/#{@audiogram.id}\" method=\"POST\"")
+        @response.body.must_match Regexp.new("name=\"_method\" value=\"PUT\"")
+      end
+    end
+
+    describe "basic認証をpassしない場合" do
+      it "401 status code (Unauthorized) が帰ってくること" do
+        basic_authorize @right_user, @wrong_pw
+        get "/patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit"
+        last_response.status.must_equal 401
+      end
+    end
+
+    describe "basic認証に対して username:password を提示しない場合" do
+      it "401 status code (Unauthorized) が帰ってくること" do
+        get "/patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit"
+        last_response.status.must_equal 401
+      end
+    end
+  end
+
 =begin
 #----------------------------------------------
   describe "GET new" do
@@ -158,36 +200,6 @@ describe 'AudiogramsController' do
     end
   end
 
-  describe "GET edit" do
-    context "basic認証に対して username:passwordなしで操作した場合" do
-      it "リクエストした audiogramは @audiogramに assignされないこと" do
-        audiogram = Audiogram.create! valid_attributes
-        @patient.audiograms << audiogram
-        get :edit, {:patient_id => @patient.to_param, :id => audiogram.to_param}, valid_session
-        expect(assigns(:audiogram)).not_to eq(audiogram)
-      end
-    end
-
-    context "basic認証をpassする場合" do
-      it "assigns the requested audiogram as @audiogram" do
-        request.env['HTTP_AUTHORIZATION'] = @right_auth
-        audiogram = Audiogram.create! valid_attributes
-        @patient.audiograms << audiogram
-        get :edit, {:patient_id => @patient.to_param, :id => audiogram.to_param}, valid_session
-        expect(assigns(:audiogram)).to eq(audiogram)
-      end
-    end
-
-    context "basic認証をpassしない場合" do
-      it "リクエストした audiogramは @audiogramに assignされないこと" do
-        request.env['HTTP_AUTHORIZATION'] = @wrong_auth
-        audiogram = Audiogram.create! valid_attributes
-        @patient.audiograms << audiogram
-        get :edit, {:patient_id => @patient.to_param, :id => audiogram.to_param}, valid_session
-        expect(assigns(:audiogram)).not_to eq(audiogram)
-      end
-    end
-  end
 
   describe "POST create" do
     describe "with valid params" do

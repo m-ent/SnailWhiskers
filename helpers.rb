@@ -1,4 +1,15 @@
 module Helpers
+  def protected!
+    return if authorized?
+    headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
+    halt 401, "Not authorized\n"
+  end
+
+  def authorized?
+    @auth ||=  Rack::Auth::Basic::Request.new(request.env)
+    @auth.provided? and @auth.basic? and @auth.credentials and @auth.credentials == ['audioadmin', 'audioadmin']
+  end
+
   def pluralize(amount, noun)
     irregular = {'datum' => 'data',
                  'person' => 'people'}
@@ -22,6 +33,12 @@ module Helpers
   def h(text)
     # Ref: How do I escape HTML? http://www.sinatrarb.com/faq.html#escape_html
     Rack::Utils.escape_html(text)
+  end
+
+  def time_element(time)
+    t = time.getlocal
+    return {year: t.strftime("%Y"), month: t.strftime("%m"), day: t.strftime("%d"), 
+            hour: t.strftime("%H"), min: t.strftime("%M"), sec: t.strftime("%S")}
   end
 
   def reg_id(id)

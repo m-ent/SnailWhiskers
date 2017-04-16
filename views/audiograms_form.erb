@@ -1,0 +1,128 @@
+<%#= form_for([@patient, @audiogram]) do |f| %>
+  <% if @audiogram.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@audiogram.errors.count, "error") %> prohibited this audiogram from being saved:</h2>
+      <ul>
+      <% @audiogram.errors.full_messages.each do |msg| %>
+        <li><%= msg %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <!-- div class="field" -->
+    <%#= f.label :examiner %><!-- br / -->
+    <%#= f.text_field :examiner %>
+  <!-- /div -->
+  <div class="field">
+    examdate<br>
+    <% t = time_element(@audiogram.examdate) %>
+    <%= "<input type=\"text\" name=\"t_year\" value=\"#{t[:year]}\">" %>
+    <%= "<input type=\"text\" name=\"t_month\" value=\"#{t[:month]}\">" %>
+    <%= "<input type=\"text\" name=\"t_day\" value=\"#{t[:day]}\">" %>
+    <%= "<input type=\"text\" name=\"t_hour\" value=\"#{t[:hour]}\">" %>
+    <%= "<input type=\"text\" name=\"t_min\" value=\"#{t[:min]}\">" %>
+    <%= "<input type=\"text\" name=\"t_sec\" value=\"#{t[:sec]}\">" %>
+  </div>
+  <div class="field">
+    comment<br>
+    <%= "<input type=\"text\" name=\"comment\" value=\"#{@audiogram.comment}\">" %>
+  </div>
+
+  <% ["rt", "lt"].each do |side| %>
+    <% ["125", "250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+      <div class="field">
+        <%= "ac_#{side}_#{freq}" %><br>
+        <%= "<input type=\"text\" name=\"ac_#{side}_#{freq}\"
+          value=\"#{eval("@audiogram.ac_#{side}_#{freq}")}\">" %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% ["rt", "lt"].each do |side| %>
+    <% ["250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+      <div class="field">
+        <%= "bc_#{side}_#{freq}" %><br>
+        <%= "<input type=\"text\" name=\"bc_#{side}_#{freq}\"
+          value=\"#{eval("@audiogram.bc_#{side}_#{freq}")}\">" %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% ["rt", "lt"].each do |side| %>
+    <% ["125", "250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+      <div class="field">
+        <%= "<input type=\"checkbox\" name=\"ac_#{side}_#{freq}_scaleout\"
+          value=\"#{eval("@audiogram.ac_#{side}_#{freq}_scaleout") ? "true" : ""}\">" %>
+        <%= "ac_#{side}_#{freq}_scaleout" %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% ["rt", "lt"].each do |side| %>
+    <% ["250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+      <div class="field">
+        <%= "<input type=\"checkbox\" name=\"bc_#{side}_#{freq}_scaleout\"
+          value=\"#{eval("@audiogram.bc_#{side}_#{freq}_scaleout") ? "true" : ""}\">" %>
+        <%= "bc_#{side}_#{freq}_scaleout" %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% ["rt", "lt"].each do |side| %>
+    <% ["125", "250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+      <div class="field">
+        <%= "mask_ac_#{side}_#{freq}" %><br>
+        <%= "<input type=\"text\" name=\"mask_ac_#{side}_#{freq}\"
+          value=\"#{eval("@audiogram.mask_ac_#{side}_#{freq}")}\">" %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% ["rt", "lt"].each do |side| %>
+    <% ["250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+      <div class="field">
+        <%= "mask_bc_#{side}_#{freq}" %><br>
+        <%= "<input type=\"text\" name=\"mask_bc_#{side}_#{freq}\"
+          value=\"#{eval("@audiogram.mask_bc_#{side}_#{freq}")}\">" %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% ["rt", "lt"].each do |side| %>
+    <% ["125", "250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+      <div class="field">
+        <%= "mask_ac_#{side}_#{freq}_type" %><br>
+        <%= "<input type=\"text\" name=\"mask_ac_#{side}_#{freq}_type\"
+          value=\"#{eval("@audiogram.mask_ac_#{side}_#{freq}_type")}\">" %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% ["rt", "lt"].each do |side| %>
+    <% ["250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+      <div class="field">
+        <%= "mask_bc_#{side}_#{freq}_type" %><br>
+        <%= "<input type=\"text\" name=\"mask_bc_#{side}_#{freq}_type\"
+          value=\"#{eval("@audiogram.mask_bc_#{side}_#{freq}_type")}\">" %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <div class="field">
+    <%= "<input type=\"checkbox\" name=\"manual_input\"
+      value=\"#{@audiogram.manual_input ? "true" : ""}\"" %>manual_input
+  </div>
+  <div class="field">
+    audiometer
+    <%= "<input type=\"text\" name=\"audiometer\" value=\"#{@audiogram.audiometer}\">" %>
+  </div>
+  <div class="field">
+    hospital
+    <%= "<input type=\"text\" name=\"hospital\" value=\"#{@audiogram.hospital}\">" %>
+  </div>
+
+  <div class="actions">
+    <input type='submit' value="Save Audiogram">
+  </div>
+<%# end %>

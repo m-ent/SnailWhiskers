@@ -107,14 +107,19 @@ class Main < Sinatra::Base
     erb :audiograms_show
   end
 
+  get '/patients/:patient_id/audiograms/:id/edit' do # audiograms#edit
+    protected!
+    @patient = Patient.find(params[:patient_id])
+    @audiogram = @patient.audiograms.find(params[:id])
+    erb :audiograms_edit
+  end
+
 #  get '/patients/:patient_id/audiograms/new' do # audiograms#new
 #  end
 
 #  post '/patients/:patient_id/audiograms' do # audiograms#create
 #  end
 
-#  get '/patients/:patient_id/audiograms/:id/edit' do # audiograms#edit
-#  end
 
 #  put '/patients/:patient_id/audiograms/:id' do # audiograms#update
 #  end
