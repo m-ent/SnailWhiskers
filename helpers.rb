@@ -36,9 +36,13 @@ module Helpers
   end
 
   def time_element(time)
-    t = time.getlocal
-    return {year: t.strftime("%Y"), month: t.strftime("%m"), day: t.strftime("%d"), 
-            hour: t.strftime("%H"), min: t.strftime("%M"), sec: t.strftime("%S")}
+    if time
+      t = time.getlocal
+      return {year: t.strftime("%Y"), month: t.strftime("%m"), day: t.strftime("%d"), 
+              hour: t.strftime("%H"), min: t.strftime("%M"), sec: t.strftime("%S")}
+    else
+      return {year: nil, month: nil, day: nil, hour: nil, min: nil, sec: nil}
+    end
   end
 
   def reg_id(id)

@@ -114,6 +114,43 @@ class Main < Sinatra::Base
     erb :audiograms_edit
   end
 
+  put '/patients/:patient_id/audiograms/:id' do # audiograms#update
+    @patient = Patient.find(params[:patient_id])
+    @audiogram = @patient.audiograms.find(params[:id])
+    if @audiogram.update(select_params(params, [:examdate, :comment, :image_location,
+      :ac_rt_125, :ac_rt_250, :ac_rt_500, :ac_rt_1k, :ac_rt_2k, :ac_rt_4k, :ac_rt_8k,
+      :ac_lt_125, :ac_lt_250, :ac_lt_500, :ac_lt_1k, :ac_lt_2k, :ac_lt_4k, :ac_lt_8k,
+      :bc_rt_250, :bc_rt_500, :bc_rt_1k, :bc_rt_2k, :bc_rt_4k, :bc_rt_8k,
+      :bc_lt_250, :bc_lt_500, :bc_lt_1k, :bc_lt_2k, :bc_lt_4k, :bc_lt_8k,
+      :ac_rt_125_scaleout, :ac_rt_250_scaleout, :ac_rt_500_scaleout, :ac_rt_1k_scaleout,
+        :ac_rt_2k_scaleout, :ac_rt_4k_scaleout, :ac_rt_8k_scaleout,
+      :ac_lt_125_scaleout, :ac_lt_250_scaleout, :ac_lt_500_scaleout, :ac_lt_1k_scaleout,
+        :ac_lt_2k_scaleout, :ac_lt_4k_scaleout, :ac_lt_8k_scaleout,
+      :bc_rt_250_scaleout, :bc_rt_500_scaleout, :bc_rt_1k_scaleout,
+        :bc_rt_2k_scaleout, :bc_rt_4k_scaleout, :bc_rt_8k_scaleout,
+      :bc_lt_250_scaleout, :bc_lt_500_scaleout, :bc_lt_1k_scaleout,
+        :bc_lt_2k_scaleout, :bc_lt_4k_scaleout, :bc_lt_8k_scaleout,
+      :mask_ac_rt_125, :mask_ac_rt_250, :mask_ac_rt_500, :mask_ac_rt_1k,
+        :mask_ac_rt_2k, :mask_ac_rt_4k, :mask_ac_rt_8k,
+      :mask_ac_lt_125, :mask_ac_lt_250, :mask_ac_lt_500, :mask_ac_lt_1k,
+        :mask_ac_lt_2k, :mask_ac_lt_4k, :mask_ac_lt_8k,
+      :mask_bc_rt_250, :mask_bc_rt_500, :mask_bc_rt_1k, :mask_bc_rt_2k, :mask_bc_rt_4k, :mask_bc_rt_8k,
+      :mask_bc_lt_250, :mask_bc_lt_500, :mask_bc_lt_1k, :mask_bc_lt_2k, :mask_bc_lt_4k, :mask_bc_lt_8k,
+      :mask_ac_rt_125_type, :mask_ac_rt_250_type, :mask_ac_rt_500_type, :mask_ac_rt_1k_type,
+        :mask_ac_rt_2k_type, :mask_ac_rt_4k_type, :mask_ac_rt_8k_type,
+      :mask_ac_lt_125_type, :mask_ac_lt_250_type, :mask_ac_lt_500_type, :mask_ac_lt_1k_type,
+        :mask_ac_lt_2k_type, :mask_ac_lt_4k_type, :mask_ac_lt_8k_type,
+      :mask_bc_rt_250_type, :mask_bc_rt_500_type, :mask_bc_rt_1k_type,
+        :mask_bc_rt_2k_type, :mask_bc_rt_4k_type, :mask_bc_rt_8k_type,
+      :mask_bc_lt_250_type, :mask_bc_lt_500_type, :mask_bc_lt_1k_type,
+        :mask_bc_lt_2k_type, :mask_bc_lt_4k_type, :mask_bc_lt_8k_type,
+      :manual_input, :audiometer, :hospital]))
+      redirect to("/patients/#{@patient.id}/audiograms/#{@audiogram.id}")
+    else
+      erb :audiograms_edit
+    end
+  end
+
 #  get '/patients/:patient_id/audiograms/new' do # audiograms#new
 #  end
 
@@ -121,8 +158,6 @@ class Main < Sinatra::Base
 #  end
 
 
-#  put '/patients/:patient_id/audiograms/:id' do # audiograms#update
-#  end
 
 #  delete '/patients/:patient_id/audiograms/:id' do # audiograms#destroy
 #  end

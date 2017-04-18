@@ -200,7 +200,6 @@ describe 'AudiogramsController' do
     end
   end
 
-
   describe "POST create" do
     describe "with valid params" do
       it "creates a new Audiogram" do
@@ -237,61 +236,52 @@ describe 'AudiogramsController' do
       end
     end
   end
+=end
 
-  describe "PUT update" do
-    describe "with valid params" do
-      it "updates the requested audiogram" do
-        audiogram = Audiogram.create! valid_attributes
-        @patient.audiograms << audiogram
-        # Assuming there are no other audiograms in the database, this
-        # specifies that the Audiogram created on the previous line
-        # receives the :update_attributes message with whatever params are
-        # submitted in the request.
-        expect_any_instance_of(Audiogram).to receive(:update).with({'audiometer' => 'params'})
-        put :update, {:patient_id => @patient.to_param, :id => audiogram.to_param, \
-	              :audiogram => {'audiometer' => 'params'}}, valid_session
+  describe "PUT audiogram#update (/patients/:patient_id/audiograms/:id)" do
+    before do
+      @audiogram = Audiogram.create! valid_attributes
+      @patient.audiograms << @audiogram
+    end
+
+    describe "valid params を入力した場合" do
+      it "指定された audiogram が update されること" do
+        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: 'update', examdate: Time.now}
+        audiogram_reloaded = Audiogram.find(@audiogram.id)
+        audiogram_reloaded.audiometer.wont_equal @audiogram.audiometer
       end
 
-      it "assigns the requested audiogram as @audiogram" do
-        audiogram = Audiogram.create! valid_attributes
-        @patient.audiograms << audiogram
-        put :update, {:patient_id => @patient.to_param, :id => audiogram.to_param, \
-	              :audiogram => valid_attributes}, valid_session
-        expect(assigns(:audiogram)).to eq(audiogram)
+      it "redirect されること" do
+        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: @audiogram.audiometer,\
+                                                                            examdate: @audiogram.examdate}
+        last_response.redirect?.must_equal true
       end
 
-      it "redirects to the audiogram" do
-        audiogram = Audiogram.create! valid_attributes
-        @patient.audiograms << audiogram
-        put :update, {:patient_id => @patient.to_param, :id => audiogram.to_param, \
-	              :audiogram => valid_attributes}, valid_session
-        expect(response).to redirect_to([@patient, audiogram])
+      it "redirect された先が、指定された patient/audiogram の view であること" do
+        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: @audiogram.audiometer,\
+                                                                            examdate: @audiogram.examdate}
+        follow_redirect!
+        last_response.ok?.must_equal true
+        last_response.body.must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id} -->"
       end
     end
 
-    describe "with invalid params" do
-      it "assigns the audiogram as @audiogram" do
-        audiogram = Audiogram.create! valid_attributes
-        @patient.audiograms << audiogram
-        # Trigger the behavior that occurs when invalid params are submitted
-        allow_any_instance_of(Audiogram).to receive(:save).and_return(false)
-        put :update, {:patient_id => @patient.to_param, :id => audiogram.to_param, \
-	              :audiogram => {}}, valid_session
-        expect(assigns(:audiogram)).to eq(audiogram)
+    describe "valid でない params を入力した場合" do
+      it "指定された patient が update されないこと" do
+        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: nil}
+        audiogram_reloaded = Audiogram.find(@audiogram.id)
+        audiogram_reloaded.audiometer.must_equal @audiogram.audiometer
       end
 
-      it "re-renders the 'edit' template" do
-        audiogram = Audiogram.create! valid_attributes
-        @patient.audiograms << audiogram
-        # Trigger the behavior that occurs when invalid params are submitted
-        allow_any_instance_of(Audiogram).to receive(:save).and_return(false)
-        put :update, {:patient_id => @patient.to_param, :id => audiogram.to_param, \
-	              :audiogram => {}}, valid_session
-        expect(response).to render_template("edit")
+      it "/patients/:patient_id/audiograms/:id/edit の view を表示すること" do
+        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: nil}
+        last_response.ok?.must_equal true
+        last_response.body.must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit -->"
       end
     end
   end
 
+=begin
   describe "DELETE destroy" do
     before do
       @audiogram = Audiogram.create! valid_attributes

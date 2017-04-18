@@ -19,5 +19,5 @@ end
 
 class Audiogram < ActiveRecord::Base
   belongs_to :patient
-  validates_presence_of :examdate, :audiometer, :on => :create
+  validates_presence_of :examdate, :audiometer, :on => [:create, :update]
 end
