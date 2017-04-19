@@ -86,7 +86,7 @@ describe 'AudiogramsController' do
     end
   end
 
-  describe "GET audiogram#show (/patients/:patient_id/audiograms/:id)" do
+  describe "GET audiograms#show (/patients/:patient_id/audiograms/:id)" do
     before do
       @audiogram = Audiogram.create! valid_attributes
       @audiogram.ac_rt_500, @audiogram.ac_rt_1k, @audiogram.ac_rt_2k =  0, 10, 20
@@ -150,7 +150,7 @@ describe 'AudiogramsController' do
     end
   end
 
-  describe "GET audiogram#edit (/patients/:patient_id/audiograms/:id/edit)" do
+  describe "GET audiograms#edit (/patients/:patient_id/audiograms/:id/edit)" do
     before do
       @audiogram = Audiogram.create! valid_attributes
       @patient.audiograms << @audiogram
@@ -187,6 +187,121 @@ describe 'AudiogramsController' do
       it "401 status code (Unauthorized) が帰ってくること" do
         get "/patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit"
         last_response.status.must_equal 401
+      end
+    end
+  end
+
+  describe "PUT audiograms#update (/patients/:patient_id/audiograms/:id)" do
+    before do
+      @audiogram = Audiogram.create! valid_attributes
+      @patient.audiograms << @audiogram
+    end
+
+    describe "valid params を入力した場合" do
+      it "指定された audiogram が update されること" do
+        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: 'update',\
+                                                                            examdate: Time.now}
+        audiogram_reloaded = Audiogram.find(@audiogram.id)
+        audiogram_reloaded.audiometer.wont_equal @audiogram.audiometer
+      end
+
+      it "redirect されること" do
+        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: @audiogram.audiometer,\
+                                                                            examdate: @audiogram.examdate}
+        last_response.redirect?.must_equal true
+      end
+
+      it "redirect された先が、指定された patient/audiogram の view であること" do
+        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: @audiogram.audiometer,\
+                                                                            examdate: @audiogram.examdate}
+        follow_redirect!
+        last_response.ok?.must_equal true
+        last_response.body.must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id} -->"
+      end
+    end
+
+    describe "valid でない params を入力した場合" do
+      it "指定された patient が update されないこと" do
+        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: nil}
+        audiogram_reloaded = Audiogram.find(@audiogram.id)
+        audiogram_reloaded.audiometer.must_equal @audiogram.audiometer
+      end
+
+      it "/patients/:patient_id/audiograms/:id/edit の view を表示すること" do
+        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: nil}
+        last_response.ok?.must_equal true
+        last_response.body.must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit -->"
+      end
+    end
+  end
+
+  describe "DELETE audiograms#destroy (/patients/:patient_id/audiograms/:id)" do
+    before do
+      @audiogram = Audiogram.create! valid_attributes
+      @patient.audiograms << @audiogram
+    end
+
+    describe "basic認証に対して username:password を提示しない場合" do
+      it "指定された audiogram が削除されないこと" do
+        audiogram_num = Audiogram.all.length
+        delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
+        Audiogram.all.length.must_equal audiogram_num
+      end
+
+      it "redirect されないこと" do
+        delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
+        last_response.redirect?.wont_equal true
+      end
+
+      it "401 status code (Unauthorized) が帰ってくること" do
+        delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
+        last_response.status.must_equal 401
+      end
+    end
+
+    describe "basic認証をpassしない場合" do
+      before do
+        basic_authorize @right_user, @wrong_pw
+      end
+
+      it "指定された audiogram が削除されないこと" do
+        audiogram_num = Audiogram.all.length
+        delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
+        Audiogram.all.length.must_equal audiogram_num
+      end
+
+      it "redirect されないこと" do
+        delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
+        last_response.redirect?.wont_equal true
+      end
+
+      it "401 status code (Unauthorized) が帰ってくること" do
+        delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
+        last_response.status.must_equal 401
+      end
+    end
+
+    describe "basic認証をpassする場合" do
+      before do
+        basic_authorize @right_user, @right_pw
+      end
+
+      it "指定された audiogram を削除すること" do
+        audiogram_num = Audiogram.all.length
+        delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
+        Audiogram.all.length.must_equal (audiogram_num - 1)
+      end
+
+      it "redirect されること" do
+        delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
+        last_response.redirect?.must_equal true
+      end
+
+      it "redirect 先が、全ての audiogams のリストであること" do
+        delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
+        follow_redirect!
+        last_response.ok?.must_equal true
+        last_response.body.must_include "<!-- /patients/#{@patient.id}/audiograms -->"
       end
     end
   end
@@ -233,113 +348,6 @@ describe 'AudiogramsController' do
         allow_any_instance_of(Audiogram).to receive(:save).and_return(false)
         post :create, {:patient_id => @patient.to_param, :audiogram => {}}, valid_session
         expect(response).to render_template("new")
-      end
-    end
-  end
-=end
-
-  describe "PUT audiogram#update (/patients/:patient_id/audiograms/:id)" do
-    before do
-      @audiogram = Audiogram.create! valid_attributes
-      @patient.audiograms << @audiogram
-    end
-
-    describe "valid params を入力した場合" do
-      it "指定された audiogram が update されること" do
-        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: 'update', examdate: Time.now}
-        audiogram_reloaded = Audiogram.find(@audiogram.id)
-        audiogram_reloaded.audiometer.wont_equal @audiogram.audiometer
-      end
-
-      it "redirect されること" do
-        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: @audiogram.audiometer,\
-                                                                            examdate: @audiogram.examdate}
-        last_response.redirect?.must_equal true
-      end
-
-      it "redirect された先が、指定された patient/audiogram の view であること" do
-        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: @audiogram.audiometer,\
-                                                                            examdate: @audiogram.examdate}
-        follow_redirect!
-        last_response.ok?.must_equal true
-        last_response.body.must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id} -->"
-      end
-    end
-
-    describe "valid でない params を入力した場合" do
-      it "指定された patient が update されないこと" do
-        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: nil}
-        audiogram_reloaded = Audiogram.find(@audiogram.id)
-        audiogram_reloaded.audiometer.must_equal @audiogram.audiometer
-      end
-
-      it "/patients/:patient_id/audiograms/:id/edit の view を表示すること" do
-        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: nil}
-        last_response.ok?.must_equal true
-        last_response.body.must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit -->"
-      end
-    end
-  end
-
-=begin
-  describe "DELETE destroy" do
-    before do
-      @audiogram = Audiogram.create! valid_attributes
-      @patient.audiograms << @audiogram
-    end
-
-    context "basic認証に対して username:passwordなしで操作した場合" do
-      it "does not destroy the requested audiogram" do
-        expect {
-          delete :destroy, {:patient_id => @patient.to_param, :id => @audiogram.to_param},\
-            valid_session
-        }.to change(Audiogram, :count).by(0)
-      end
-
-      it "does not redirect to the audiograms list" do
-        delete :destroy, {:patient_id => @patient.to_param, :id => @audiogram.to_param},\
-          valid_session
-        expect(response).not_to redirect_to(patient_audiograms_url)
-      end
-    end
-
-    context "basic認証をpassしない場合" do
-      before do
-        request.env['HTTP_AUTHORIZATION'] = @wrong_auth
-      end
-
-      it "does not destroy the requested audiogram" do
-        expect {
-          delete :destroy, {:patient_id => @patient.to_param, :id => @audiogram.to_param},\
-            valid_session
-        }.to change(Audiogram, :count).by(0)
-      end
-
-      it "does not redirect to the audiograms list" do
-        delete :destroy, {:patient_id => @patient.to_param, :id => @audiogram.to_param},\
-          valid_session
-        expect(response).not_to redirect_to(patient_audiograms_url)
-      end
-    end
-
-    context "basic認証をpassする場合" do
-      before do
-        request.env['HTTP_AUTHORIZATION'] = @right_auth
-      end
-
-      it "destroys the requested audiogram" do
-        expect {
-          delete :destroy, {:patient_id => @patient.to_param, :id => @audiogram.to_param},\
-            valid_session
-        }.to change(Audiogram, :count).by(-1)
-      end
-
-      it "redirects to the audiograms list" do
-        delete :destroy, {:patient_id => @patient.to_param, :id => @audiogram.to_param},\
-          valid_session
-#        response.should redirect_to(@audiograms_url)
-#        response.should redirect_to([@patient, @audiograms_url])
-        expect(response).to redirect_to(patient_audiograms_url)
       end
     end
   end

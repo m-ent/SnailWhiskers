@@ -151,6 +151,14 @@ class Main < Sinatra::Base
     end
   end
 
+  delete '/patients/:patient_id/audiograms/:id' do # patients#destroy
+    protected!
+    @patient = Patient.find(params[:patient_id])
+    @audiogram = @patient.audiograms.find(params[:id])
+    @audiogram.destroy
+    redirect to("/patients/#{@patient.id}/audiograms")
+  end
+
 #  get '/patients/:patient_id/audiograms/new' do # audiograms#new
 #  end
 
