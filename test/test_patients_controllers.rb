@@ -213,14 +213,14 @@ describe 'PatientsController' do
     end
   end
 
-  describe "GET patients#by_hp_id (/patients/by_hp_id/:hp_id)" do
+  describe "GET patients_by_id (/patients_by_id/:hp_id)" do
     describe "validな hp_idで requestした場合" do
       before do
         target_hp_id = valid_id?(@valid_id1) # 0000000019
         Patient.where(hp_id: target_hp_id).delete_all
         @patient = Patient.create! valid_attributes
         @hp_id = @patient.hp_id
-        get "/patients/by_hp_id/#{@hp_id}", valid_session
+        get "/patients_by_id/#{@hp_id}", valid_session
       end
 
       it "redirect されること" do
@@ -241,7 +241,7 @@ describe 'PatientsController' do
       patient = Patient.create! valid_attributes
       hp_id = patient.hp_id
       patient.delete
-      get "/patients/by_hp_id/#{@hp_id}", valid_session
+      get "/patients_by_id/#{@hp_id}", valid_session
       last_response.status.must_equal 404
     end
 
@@ -250,7 +250,7 @@ describe 'PatientsController' do
         true
       end
       @invalid_hp_id = 18
-      get "/patients/by_hp_id/#{@invalid_hp_id}", valid_session
+      get "/patients_by_id/#{@invalid_hp_id}", valid_session
       last_response.status.must_equal 400
     end
   end

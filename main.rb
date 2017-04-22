@@ -77,7 +77,7 @@ class Main < Sinatra::Base
     redirect to("/patients")
   end
 
-  get '/patients/by_hp_id/:hp_id' do # patients#by_hp_id
+  get '/patients_by_id/:hp_id' do # patients#by_hp_id
     if valid_id?(params[:hp_id]) 
       @patient = Patient.where(hp_id: params[:hp_id]).take
       if @patient
@@ -163,11 +163,6 @@ class Main < Sinatra::Base
 #  end
 
 #  post '/patients/:patient_id/audiograms' do # audiograms#create
-#  end
-
-
-
-#  delete '/patients/:patient_id/audiograms/:id' do # audiograms#destroy
 #  end
 
   private
