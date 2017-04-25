@@ -1,8 +1,11 @@
 require 'sinatra/base'
 require 'sinatra/activerecord'
 
-def id_validation_enable?
-  true # or false
+class Id_validation
+  @@state = true
+  def self.state; @@state; end
+  def self.enable; @@state = true; end
+  def self.disable; @@state = false; end
 end
 
 def hp_id_is_valid

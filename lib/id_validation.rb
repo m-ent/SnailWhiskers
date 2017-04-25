@@ -17,7 +17,7 @@ def valid_id?(id_str)
 end
 
 def valid_checksum?(id)
-  if id_validation_enable?
+  if Id_validation::state
     # hp_id の validation をする場合: models.rb に設定あり
     # Rule for Nagoya East Medical Center
     id1 = id.to_i / 10

@@ -8,6 +8,7 @@ describe 'PatientsController' do
   before do
     @valid_id1 = '19'
     @valid_id2 = '27' #35 43 51 60 78 86 94
+    @invalid_hp_id = '18'
   end
 
   # return the minimal set of attributes required to create a valid Patient
@@ -249,61 +250,35 @@ describe 'PatientsController' do
       def id_validation_enable?  # 設定によらず強制的に validation を有効にしておく
         true
       end
-      @invalid_hp_id = 18
       get "/patients_by_id/#{@invalid_hp_id}", valid_session
       last_response.status.must_equal 400
     end
   end
 
-=begin
-
-  describe "POST direct_create" do
-    # POST /patients/direct_create
-    # params は params[:hp_id][:datatype][:examdate][:equip_name][:comment][:data]
+  describe "POST patients_by_id_create_exam (/patients_by_id/:hp_id/create_exam)" do
+    # params は params[:datatype][:examdate][:equip_name][:comment][:data]
     # equip_name は検査機器の名称: 'AA-97' など
     # datatype は今のところ audiogram, impedance, images
-    let(:valid_audio_attributes) { {:hp_id => @valid_hp_id, \
-                                    :datatype => @datatype, \
-                                    :examdate => @examdate, \
-                                    :equip_name => @equip_name, \
-                                    :comment => @comment, \
-                                    :data => @raw_audiosample} }
-    let(:audio_attributes_wo_datatype) { {:hp_id => @valid_hp_id, \
-                                    :examdate => @examdate, \
-                                    :equip_name => @equip_name, \
-                                    :comment => @comment, \
-                                    :data => @raw_audiosample} }
-    let(:audio_attributes_w_invalidID) { {:hp_id => @invalid_hp_id, \
-                                    :datatype => @datatype, \
-                                    :examdate => @examdate, \
-                                    :equip_name => @equip_name, \
-                                    :comment => @comment, \
-                                    :data => @raw_audiosample} }
-    let(:audio_attributes_wo_equip_name) { {:hp_id => @valid_hp_id, \
-                                    :datatype => @datatype, \
-                                    :examdate => @examdate, \
-                                    :comment => @comment, \
-                                    :data => @raw_audiosample} }
-    let(:audio_attributes_wo_data) { {:hp_id => @valid_hp_id, \
-                                    :datatype => @datatype, \
-                                    :examdate => @examdate, \
-                                    :equip_name => @equip_name, \
-                                    :comment => @comment} }
-    let(:audio_attributes_w_invalid_data) { {:hp_id => @valid_hp_id, \
-                                    :datatype => @datatype, \
-                                    :examdate => @examdate, \
-                                    :equip_name => @equip_name, \
-                                    :comment => @comment, \
-                                    :data => "no valid data"} }
+    let(:valid_audio_attributes) { {datatype: @datatype, examdate: @examdate, \
+                                    equip_name: @equip_name, comment: @comment, \
+                                    data: @raw_audiosample} }
+    let(:audio_attributes_wo_datatype) { {examdate: @examdate, equip_name: @equip_name, \
+                                    comment: @comment, data: @raw_audiosample} }
+    let(:audio_attributes_wo_equip_name) { {datatype: @datatype, examdate: @examdate, \
+                                    comment: @comment, data: @raw_audiosample} }
+    let(:audio_attributes_wo_data) { {datatype: @datatype, examdate: @examdate, \
+                                    equip_name: @equip_name, comment: @comment} }
+    let(:audio_attributes_w_invalid_data) { {datatype: @datatype, examdate: @examdate, \
+                                    equip_name: @equip_name, comment: @comment, \
+                                    data: "no valid data"} }
 
     before do
-      @valid_hp_id = 19
-      @invalid_hp_id = 18
+      @valid_hp_id = @valid_id1
       @examdate = Time.now.strftime("%Y:%m:%d-%H:%M:%S")
       @comment = "comment"
     end
 
-    context "audiometer のデータが送られた場合" do
+    describe "audiometer のデータが送られた場合" do
       before do
         @equip_name = "audiometer"
         @datatype = "audiogram"
@@ -313,135 +288,132 @@ describe 'PatientsController' do
         #L  30  35  40  45  50  55  60
       end
 
-      context "datatypeがない場合" do
-        it "HTTP status code 400を返すこと" do
-#puts "-------------------------------------"
-#p valid_audio_attributes
-#          post :direct_create, {:hp_id => @valid_hp_id, :examdate => @examdate, \
-#                   :equip_name => @equip_name, :comment => @comment, \
-#                   :data => @raw_audiosample}
-          post :direct_create, audio_attributes_wo_datatype
-          expect(response.status).to be(400)
-        end
+      it "datatypeがない場合 HTTP status code 400を返すこと" do
+        post "/patients_by_id/#{@valid_hp_id}/create_exam", audio_attributes_wo_datatype
+        last_response.status.must_equal 400
       end
 
-      context "datatypeがaudiogramの場合" do
+      describe "datatypeがaudiogramの場合" do
         it "正しいパラメータの場合、Audiogramのアイテム数が1増えること" do
-          expect {
-            post :direct_create, valid_audio_attributes
-          }.to change(Audiogram, :count).by(1)
+          audiogram_num = Audiogram.all.length
+          post "/patients_by_id/#{@valid_hp_id}/create_exam", valid_audio_attributes
+          Audiogram.all.length.must_equal (audiogram_num + 1)
         end
 
         it "正しいパラメータの場合、maskingのデータが取得されること" do
-          post :direct_create, valid_audio_attributes
-          expect(assigns(:audiogram).mask_ac_rt_125).not_to be_nil
+          post "/patients_by_id/#{@valid_hp_id}/create_exam", valid_audio_attributes
+          Audiogram.last.mask_ac_rt_125.wont_equal nil
         end
 
         it "正しいパラメータの場合、HTTP status code 204を返すこと" do
-          post :direct_create, valid_audio_attributes
-          expect(response.status).to be(204)
+          post "/patients_by_id/#{@valid_hp_id}/create_exam", valid_audio_attributes
+          last_response.status.must_equal 204
         end
 
         it "正しいパラメータの場合、所定の位置にグラフとサムネイルが作られること" do
-          post :direct_create, valid_audio_attributes
-          img_loc = "app/assets/images/#{assigns(:audiogram).image_location}"
+          post "/patients_by_id/#{@valid_hp_id}/create_exam", valid_audio_attributes
+          img_loc = "assets/images/#{Audiogram.last.image_location}"
           thumb_loc = img_loc.sub("graphs", "thumbnails")
-          expect(File::exists?(img_loc)).to be true
-          expect(File::exists?(thumb_loc)).to be true
-          # assigns(:audiogram)を有効にするには、controller側でインスタンス変数@audiogramが
-          # 作成したAudiogramを示すことが必要
+          File::exists?(img_loc).must_equal true
+          File::exists?(thumb_loc).must_equal true
         end
 
-        if id_validation_enable?
-          it "(以前のsystremでは)不正なhp_idの場合、HTTP status code 400を返すこと" do
-            post :direct_create, audio_attributes_w_invalidID
-            response.status.should  be(400)
+        describe "invalid な ID でリクエストした場合" do
+          it "ID valdationが有効な場合、HTTP status code 400を返すこと" do
+            id_validation_tmp = Id_validation::state
+            Id_validation::enable
+            post "/patients_by_id/#{@invalid_hp_id}/create_exam", valid_audio_attributes
+            id_validation_tmp ? Id_validation::enable : Id_validation::disable
+            last_response.status.must_equal 400
           end
-        else
-          it "(以前のsystremでは)不正なhp_idの場合も、HTTP status code 204を返すこと" do
-            post :direct_create, audio_attributes_w_invalidID
-            expect(response.status).to be(204)
+
+          it "ID valdationが無効な場合、HTTP status code 204を返すこと" do
+            id_validation_tmp = Id_validation::state
+            Id_validation::disable
+            post "/patients_by_id/#{valid_id?(@invalid_hp_id)}/create_exam", valid_audio_attributes
+            id_validation_tmp ? Id_validation::enable : Id_validation::disable
+            last_response.status.must_equal 204
           end
         end
 
         it "equip_nameの入力がない場合、HTTP status code 400を返すこと" do
-          post :direct_create, audio_attributes_wo_equip_name
-#          post :direct_create, {:hp_id => @valid_hp_id, :examdate => @examdate, \
-#                   :datatype => @datatype, \
-#                   :comment => @comment, :data => @raw_audiosample}
-          expect(response.status).to be(400)
+          post "/patients_by_id/#{@valid_hp_id}/create_exam", audio_attributes_wo_equip_name
+          last_response.status.must_equal 400
         end
 
-        it "dataがない場合、HTTP status code 400を返すこと" do
-          post :direct_create, audio_attributes_wo_data
-          expect(response.status).to be(400)
+        it "dataがない場合、HTTP status cod@e 400を返すこと" do
+          post "/patients_by_id/#{@valid_hp_id}/create_exam", audio_attributes_wo_data
+          last_response.status.must_equal 400
         end
 
         it "data形式が不正の場合、HTTP status code 400を返すこと" do
-          post :direct_create, audio_attributes_w_invalid_data
-          expect(response.status).to be(400)
+          post "/patients_by_id/#{@valid_hp_id}/create_exam", audio_attributes_w_invalid_data
+          last_response.status.must_equal 400
         end
 
-        it "hp_idが存在しないものの場合、新たにPatientのインスタンスを作る(Patientのアイテム数が1増える)こと" do
-          if patient_to_delete = Patient.find_by_hp_id(@valid_hp_id)
-            patient_to_delete.destroy
-          end
-          expect {
-            post :direct_create, valid_audio_attributes
-          }.to change(Patient, :count).by(1)
-        end
-
-        it "hp_idが存在しないものの場合、(新たにPatientを作成し) Audiogramのアイテム数が1増えること" do
-          if patient_to_delete = Patient.find_by_hp_id(@valid_hp_id)
-            patient_to_delete.destroy
-          end
-          expect {
-            post :direct_create, valid_audio_attributes
-          }.to change(Audiogram, :count).by(1)
-        end
-
-        context "comment内容による @patient.audiogram.commentの変化について" do
+        describe "hp_idが存在しない場合" do
           before do
+            Patient.where(hp_id: valid_id?(@valid_hp_id)).each do |p|
+              p.destroy
+            end
+            @patient_num = Patient.all.length
+            @audiogram_num = Audiogram.all.length
+            post "/patients_by_id/#{@valid_hp_id}/create_exam", valid_audio_attributes
+          end
+
+          it "新たにPatientのインスタンスを作る(Patientのアイテム数が1増える)こと" do
+            Patient.all.length.must_equal (@patient_num + 1)
+          end
+
+          it "(新たにPatientを作成し) Audiogramのアイテム数が1増えること" do
+            Audiogram.all.length.must_equal (@audiogram_num + 1)
+          end
+        end
+
+        describe "comment内容による @patient.audiogram.commentの変化について" do
+          before do
+            Patient.where(hp_id: valid_id?(@valid_hp_id)).each do |p|
+              p.destroy
+            end
             @patient = Patient.create! valid_attributes
           end
 
-          def direct_create_with_comment(com)
-            post :direct_create, {:hp_id => @patient.hp_id, :examdate => @examdate, \
-                          :equip_name => @equip_name, :datatype => @datatype, \
-                          :comment => com, :data => @raw_audiosample}
+          def create_with_comment(com)
+            post "/patients_by_id/#{valid_id?(@patient.hp_id)}/create_exam",
+                                              {datatype: @datatype, examdate: @examdate, \
+                                               equip_name: @equip_name, comment: com, \
+                                               data: @raw_audiosample} 
             @patient.reload
           end
 
           it "1つのcommentがある場合、それに応じたコメントが記録されること" do
-            direct_create_with_comment("RETRY_")
-            expect(@patient.audiograms.last.comment).to match(/再検査\(RETRY\)/)
-            direct_create_with_comment("MASK_")
-            expect(@patient.audiograms.last.comment).to match(/マスキング変更\(MASK\)/)
-            direct_create_with_comment("PATCH_")
-            expect(@patient.audiograms.last.comment).to match(/パッチテスト\(PATCH\)/)
-            direct_create_with_comment("MED_")
-            expect(@patient.audiograms.last.comment).to match(/薬剤投与後\(MED\)/)
-            direct_create_with_comment("OTHER:幾つかのコメント_")
-            expect(@patient.audiograms.last.comment).to match(/^・幾つかのコメント/)
+            create_with_comment("RETRY_")
+            @patient.audiograms.last.comment.must_match /再検査\(RETRY\)/
+            create_with_comment("MASK_")
+            @patient.audiograms.last.comment.must_match /マスキング変更\(MASK\)/
+            create_with_comment("PATCH_")
+            @patient.audiograms.last.comment.must_match /パッチテスト\(PATCH\)/
+            create_with_comment("MED_")
+            @patient.audiograms.last.comment.must_match /薬剤投与後\(MED\)/
+            create_with_comment("OTHER:幾つかのコメント_")
+            @patient.audiograms.last.comment.must_match /^・幾つかのコメント/
           end
 
           it "2つのcommentがある場合、それに応じたコメントが記録されること" do
-            direct_create_with_comment("RETRY_MASK_")
-            expect(@patient.audiograms.last.comment).to match(/再検査\(RETRY\)/)
-            expect(@patient.audiograms.last.comment).to match(/マスキング変更\(MASK\)/)
-            direct_create_with_comment("MED_OTHER:幾つかのコメント_")
-            expect(@patient.audiograms.last.comment).to match(/薬剤投与後\(MED\)/)
-            expect(@patient.audiograms.last.comment).to match(/^・幾つかのコメント/)
+            create_with_comment("RETRY_MASK_")
+            @patient.audiograms.last.comment.must_match /再検査\(RETRY\)/
+            @patient.audiograms.last.comment.must_match /マスキング変更\(MASK\)/
+            create_with_comment("MED_OTHER:幾つかのコメント_")
+            @patient.audiograms.last.comment.must_match /薬剤投与後\(MED\)/
+            @patient.audiograms.last.comment.must_match /^・幾つかのコメント/
           end
         end
 
-        it "examdateが設定されていない場合..." do
-          skip "どうしたものかまだ思案中"
-        end
+#        it "examdateが設定されていない場合..." do
+#          skip "どうしたものかまだ思案中"
+#        end
+
       end
     end
   end
-
-=end
-
 end

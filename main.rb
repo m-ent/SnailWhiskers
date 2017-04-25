@@ -77,7 +77,7 @@ class Main < Sinatra::Base
     redirect to("/patients")
   end
 
-  get '/patients_by_id/:hp_id' do # patients#by_hp_id
+  get '/patients_by_id/:hp_id' do # patients_by_id
     if valid_id?(params[:hp_id]) 
       @patient = Patient.where(hp_id: params[:hp_id]).take
       if @patient
@@ -87,6 +87,44 @@ class Main < Sinatra::Base
       end
     else
       400  # bad request
+    end
+  end
+
+  post '/patients_by_id/:hp_id/create_exam' do # patients_by_id_create_exam
+    # create exam data directly from http request
+    # データなどはmultipart/form-dataの形式で送信する
+    # params は params[:datatype][:examdate][:equip_name][:comment][:data]
+    # equip_name は検査機器の名称: 'AA-97' など
+    # datatype は今のところ 'audiogram', 'impedance', 'images'
+    hp_id = valid_id?(params[:hp_id]) || "invalid_id"
+    if not @patient = Patient.find_by_hp_id(hp_id)
+      @patient = Patient.new
+      @patient.hp_id = hp_id
+    end
+
+    if @patient.save
+      case params[:datatype]
+      when "audiogram"
+        @audiogram = @patient.audiograms.create
+        @audiogram.examdate = Time.local *params[:examdate].split(/:|-/)
+        @audiogram.audiometer = params[:equip_name]
+        @audiogram.comment = parse_comment(params[:comment])
+        @audiogram.manual_input = false
+        if params[:data] && set_data(params[:data])
+          build_graph
+          if @audiogram.save
+            204 # No Content # success
+          else
+            [400, 'the audiogram cannot be saved'] # 400 # Bad Request
+          end
+        else
+            [400, 'data error'] # 400 # Bad Request
+        end
+      else
+        [400,'data type not set'] # 400 # Bad Request
+      end
+    else
+      [400, 'the patient cannnot be saved'] # 400 # Bad Request
     end
   end
 
@@ -280,5 +318,137 @@ class Main < Sinatra::Base
     return Audiodata.new("cooked", ra_data, la_data, rb_data, lb_data, \
                                    ra_mask, la_mask, rb_mask, lb_mask)
   end
+
+  def set_data(data)
+    begin
+      d = Audiodata.new("raw", data)
+      convert_to_audiogram(d, @audiogram)
+    rescue
+      return false
+    else
+      return true
+    end
+  end
+
+
+  def convert_to_audiogram(audiodata, audiogram)
+    d = audiodata.extract
+    a = audiogram
+
+    ra_data = d[:ra][:data]  # Array of floats
+    a.ac_rt_125, a.ac_rt_250, a.ac_rt_500, a.ac_rt_1k, a.ac_rt_2k, a.ac_rt_4k, a.ac_rt_8k = \
+      ra_data[0], ra_data[1], ra_data[2], ra_data[3], ra_data[4], ra_data[5], ra_data[6]
+    la_data = d[:la][:data]
+    a.ac_lt_125, a.ac_lt_250, a.ac_lt_500, a.ac_lt_1k, a.ac_lt_2k, a.ac_lt_4k, a.ac_lt_8k = \
+      la_data[0], la_data[1], la_data[2], la_data[3], la_data[4], la_data[5], la_data[6]
+
+    rb_data = d[:rb][:data]
+    a.bc_rt_250, a.bc_rt_500, a.bc_rt_1k, a.bc_rt_2k, a.bc_rt_4k, a.bc_rt_8k = \
+      rb_data[1], rb_data[2], rb_data[3], rb_data[4], rb_data[5], rb_data[6]
+    lb_data = d[:lb][:data]
+    a.bc_lt_250, a.bc_lt_500, a.bc_lt_1k, a.bc_lt_2k, a.bc_lt_4k, a.bc_lt_8k = \
+      lb_data[1], lb_data[2], lb_data[3], lb_data[4], lb_data[5], lb_data[6]
+
+    ra_so = d[:ra][:scaleout]  # Array of booleans
+    a.ac_rt_125_scaleout, a.ac_rt_250_scaleout, a.ac_rt_500_scaleout, \
+      a.ac_rt_1k_scaleout, a.ac_rt_2k_scaleout, a.ac_rt_4k_scaleout, a.ac_rt_8k_scaleout = \
+      ra_so[0], ra_so[1], ra_so[2], ra_so[3], ra_so[4], ra_so[5], ra_so[6]
+    la_so = d[:la][:scaleout]
+    a.ac_lt_125_scaleout, a.ac_lt_250_scaleout, a.ac_lt_500_scaleout, \
+      a.ac_lt_1k_scaleout, a.ac_lt_2k_scaleout, a.ac_lt_4k_scaleout, a.ac_lt_8k_scaleout = \
+      la_so[0], la_so[1], la_so[2], la_so[3], la_so[4], la_so[5], la_so[6]
+
+    rb_so = d[:rb][:scaleout]
+    a.bc_rt_250_scaleout, a.bc_rt_500_scaleout, a.bc_rt_1k_scaleout, \
+      a.bc_rt_2k_scaleout, a.bc_rt_4k_scaleout, a.bc_rt_8k_scaleout = \
+      rb_so[1], rb_so[2], rb_so[3], rb_so[4], rb_so[5], rb_so[6]
+    lb_so = d[:lb][:scaleout]
+    a.bc_lt_250_scaleout, a.bc_lt_500_scaleout, a.bc_lt_1k_scaleout, \
+      a.bc_lt_2k_scaleout, a.bc_lt_4k_scaleout, a.bc_lt_8k_scaleout = \
+      lb_so[1], lb_so[2], lb_so[3], lb_so[4], lb_so[5], lb_so[6]
+
+    #  Air-Rt, data type of :mask is Array, data-order: mask_type, mask_level
+    a.mask_ac_rt_125 = d[:ra][:mask][0][1].to_f rescue nil    # Air-rt
+    a.mask_ac_rt_125_type = d[:ra][:mask][0][0] rescue nil
+    a.mask_ac_rt_250 = d[:ra][:mask][1][1].to_f rescue nil
+    a.mask_ac_rt_250_type = d[:ra][:mask][1][0] rescue nil
+    a.mask_ac_rt_500 = d[:ra][:mask][2][1].to_f rescue nil
+    a.mask_ac_rt_500_type = d[:ra][:mask][2][0] rescue nil
+    a.mask_ac_rt_1k = d[:ra][:mask][3][1].to_f rescue nil
+    a.mask_ac_rt_1k_type = d[:ra][:mask][3][0] rescue nil
+    a.mask_ac_rt_2k = d[:ra][:mask][4][1].to_f rescue nil
+    a.mask_ac_rt_2k_type = d[:ra][:mask][4][0] rescue nil
+    a.mask_ac_rt_4k = d[:ra][:mask][5][1].to_f rescue nil
+    a.mask_ac_rt_4k_type = d[:ra][:mask][5][0] rescue nil
+    a.mask_ac_rt_8k = d[:ra][:mask][6][1].to_f rescue nil
+    a.mask_ac_rt_8k_type = d[:ra][:mask][6][0] rescue nil
+
+    a.mask_ac_lt_125 = d[:la][:mask][0][1].to_f rescue nil    #  Air-Lt
+    a.mask_ac_lt_125_type = d[:la][:mask][0][0] rescue nil
+    a.mask_ac_lt_250 = d[:la][:mask][1][1].to_f rescue nil
+    a.mask_ac_lt_250_type = d[:la][:mask][1][0] rescue nil
+    a.mask_ac_lt_500 = d[:la][:mask][2][1].to_f rescue nil
+    a.mask_ac_lt_500_type = d[:la][:mask][2][0] rescue nil
+    a.mask_ac_lt_1k = d[:la][:mask][3][1].to_f rescue nil
+    a.mask_ac_lt_1k_type = d[:la][:mask][3][0] rescue nil
+    a.mask_ac_lt_2k = d[:la][:mask][4][1].to_f rescue nil
+    a.mask_ac_lt_2k_type = d[:la][:mask][4][0] rescue nil
+    a.mask_ac_lt_4k = d[:la][:mask][5][1].to_f rescue nil
+    a.mask_ac_lt_4k_type = d[:la][:mask][5][0] rescue nil
+    a.mask_ac_lt_8k = d[:la][:mask][6][1].to_f rescue nil
+    a.mask_ac_lt_8k_type = d[:la][:mask][6][0] rescue nil
+
+    a.mask_bc_rt_250 = d[:rb][:mask][1][1].to_f rescue nil    #  Bone-Rt
+    a.mask_bc_rt_250_type = d[:rb][:mask][1][0] rescue nil
+    a.mask_bc_rt_500 = d[:rb][:mask][2][1].to_f rescue nil
+    a.mask_bc_rt_500_type = d[:rb][:mask][2][0] rescue nil
+    a.mask_bc_rt_1k = d[:rb][:mask][3][1].to_f rescue nil
+    a.mask_bc_rt_1k_type = d[:rb][:mask][3][0] rescue nil
+    a.mask_bc_rt_2k = d[:rb][:mask][4][1].to_f rescue nil
+    a.mask_bc_rt_2k_type = d[:rb][:mask][4][0] rescue nil
+    a.mask_bc_rt_4k = d[:rb][:mask][5][1].to_f rescue nil
+    a.mask_bc_rt_4k_type = d[:rb][:mask][5][0] rescue nil
+    a.mask_bc_rt_8k = d[:rb][:mask][6][1].to_f rescue nil
+    a.mask_bc_rt_8k_type = d[:rb][:mask][6][0] rescue nil
+
+    a.mask_bc_lt_250 = d[:lb][:mask][1][1].to_f rescue nil    #  Bone-Lt
+    a.mask_bc_lt_250_type = d[:lb][:mask][1][0] rescue nil
+    a.mask_bc_lt_500 = d[:lb][:mask][2][1].to_f rescue nil
+    a.mask_bc_lt_500_type = d[:lb][:mask][2][0] rescue nil
+    a.mask_bc_lt_1k = d[:lb][:mask][3][1].to_f rescue nil
+    a.mask_bc_lt_1k_type = d[:lb][:mask][3][0] rescue nil
+    a.mask_bc_lt_2k = d[:lb][:mask][4][1].to_f rescue nil
+    a.mask_bc_lt_2k_type = d[:lb][:mask][4][0] rescue nil
+    a.mask_bc_lt_4k = d[:lb][:mask][5][1].to_f rescue nil
+    a.mask_bc_lt_4k_type = d[:lb][:mask][5][0] rescue nil
+    a.mask_bc_lt_8k = d[:lb][:mask][6][1].to_f rescue nil
+    a.mask_bc_lt_8k_type = d[:lb][:mask][6][0] rescue nil
+
+    return a
+  end
+
+  def parse_comment(comment)
+    ss = StringScanner.new(comment)
+    result = String.new
+    until ss.eos? do
+      case
+      when ss.scan(/RETRY_/)
+        result += "再検査(RETRY)/"
+      when ss.scan(/MASK_/)
+        result += "マスキング変更(MASK)/"
+      when ss.scan(/PATCH_/)
+        result += "パッチテスト(PATCH)/"
+      when ss.scan(/MED_/)
+        result += "薬剤投与後(MED)/"
+      when ss.scan(/OTHER:(.*)_/)
+        result += "\n"
+        result += "・#{ss[1]}"
+      else
+        break
+      end
+    end
+    return result
+  end
+
 end
 
