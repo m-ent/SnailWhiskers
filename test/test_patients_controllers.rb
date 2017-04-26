@@ -60,7 +60,7 @@ describe 'PatientsController' do
   describe "GET patients#show (/patients/:id)" do
     before do
       @target_hp_id = valid_id?(@valid_id1) # 0000000019
-      Patient.where(hp_id: @target_hp_id).delete_all
+      Patient.delete_all
       @patient = Patient.create!(hp_id: @target_hp_id)
       get "/patients/#{@patient.id}"
       @response = last_response
@@ -87,6 +87,10 @@ describe 'PatientsController' do
   end
 
   describe "POST patients#create (/patients)" do
+    before do
+      Patient.delete_all
+    end
+
     describe "valid params を入力した場合" do
       it "新しく Patient を作成すること" do
         patient_num = Patient.all.length
@@ -128,10 +132,21 @@ describe 'PatientsController' do
         last_response.body.must_include "<!-- /patients/new -->"
       end
     end
+
+    describe "hp_id が重複する場合" do
+      it "patients の 数が増えないこと" do
+        Patient.delete_all
+        Patient.create!(hp_id: valid_id?(@valid_id1)) # 0000000019
+        patient_num = Patient.all.length
+        post "/patients", :hp_id => valid_id?(@valid_id1)
+        Patient.all.length.must_equal patient_num
+      end
+    end
   end
 
   describe "GET patients#edit (/patients/:id/edit)" do
     before do
+      Patient.delete_all
       @patient = Patient.create!(hp_id: valid_id?(@valid_id1)) # 0000000019
       get "/patients/#{@patient.id}/edit"
       @response = last_response
@@ -150,48 +165,49 @@ describe 'PatientsController' do
   end
 
   describe "PUT patiets#update (/patients/:id)" do
+    before do
+      Patient.delete_all
+      @patient = Patient.create! valid_attributes
+    end
+
     describe "valid params を入力した場合" do
       it "指定された patient が update されること" do
-        patient = Patient.create!(hp_id: valid_id?(@valid_id1)) # 0000000019
-        put "/patients/#{patient.id}", params={hp_id: valid_id?(@valid_id2)} # 000000027
-        patient_reloaded = Patient.find(patient.id)
-        patient_reloaded.hp_id.wont_equal patient.hp_id
+        put "/patients/#{@patient.id}", params={hp_id: valid_id?(@valid_id2)} # 000000027
+        patient_reloaded = Patient.find(@patient.id)
+        patient_reloaded.hp_id.wont_equal @patient.hp_id
       end
 
       it "redirect されること" do
-        patient = Patient.create! valid_attributes
-        put "/patients/#{patient.id}", params={hp_id: patient.hp_id}
+        put "/patients/#{@patient.id}", params={hp_id: @patient.hp_id}
         last_response.redirect?.must_equal true
       end
 
       it "redirect された先が、指定された patient の view であること" do
-        patient = Patient.create! valid_attributes
-        put "/patients/#{patient.id}", params={hp_id: patient.hp_id}
+        put "/patients/#{@patient.id}", params={hp_id: @patient.hp_id}
         follow_redirect!
         last_response.ok?.must_equal true
-        last_response.body.must_include "<!-- /patients/#{patient.id} -->"
+        last_response.body.must_include "<!-- /patients/#{@patient.id} -->"
       end
     end
 
     describe "valid でない params を入力した場合" do
       it "指定された patient が update されないこと" do
-        patient = Patient.create!(hp_id: valid_id?(@valid_id1)) # 0000000019
-        put "/patients/#{patient.id}", params={hp_id: 'invalid id'}
-        patient_reloaded = Patient.find(patient.id)
-        patient_reloaded.hp_id.must_equal patient.hp_id
+        put "/patients/#{@patient.id}", params={hp_id: 'invalid id'}
+        patient_reloaded = Patient.find(@patient.id)
+        patient_reloaded.hp_id.must_equal @patient.hp_id
       end
 
       it "/patients/:id/edit の view を表示すること" do
-        patient = Patient.create! valid_attributes
-        put "/patients/#{patient.id}", params={hp_id: 'invalid id'}
+        put "/patients/#{@patient.id}", params={hp_id: 'invalid id'}
         last_response.ok?.must_equal true
-        last_response.body.must_include "<!-- /patients/#{patient.id}/edit -->"
+        last_response.body.must_include "<!-- /patients/#{@patient.id}/edit -->"
       end
     end
   end
 
   describe "DELETE patients#destroy (/patients/:id)" do
     before do
+      Patient.delete_all
       @patient = Patient.create! valid_attributes
     end
 
@@ -218,7 +234,7 @@ describe 'PatientsController' do
     describe "validな hp_idで requestした場合" do
       before do
         target_hp_id = valid_id?(@valid_id1) # 0000000019
-        Patient.where(hp_id: target_hp_id).delete_all
+        Patient.delete_all
         @patient = Patient.create! valid_attributes
         @hp_id = @patient.hp_id
         get "/patients_by_id/#{@hp_id}", valid_session
@@ -238,7 +254,7 @@ describe 'PatientsController' do
 
     it "存在しない、validな hp_idで requestした場合、HTTP status code 404を返すこと" do
       target_hp_id = valid_id?(@valid_id1) # 0000000019
-      Patient.where(hp_id: target_hp_id).delete_all
+      Patient.delete_all
       patient = Patient.create! valid_attributes
       hp_id = patient.hp_id
       patient.delete
@@ -276,6 +292,7 @@ describe 'PatientsController' do
       @valid_hp_id = @valid_id1
       @examdate = Time.now.strftime("%Y:%m:%d-%H:%M:%S")
       @comment = "comment"
+      Patient.delete_all
     end
 
     describe "audiometer のデータが送られた場合" do
@@ -353,9 +370,7 @@ describe 'PatientsController' do
 
         describe "hp_idが存在しない場合" do
           before do
-            Patient.where(hp_id: valid_id?(@valid_hp_id)).each do |p|
-              p.destroy
-            end
+            Patient.delete_all
             @patient_num = Patient.all.length
             @audiogram_num = Audiogram.all.length
             post "/patients_by_id/#{@valid_hp_id}/create_exam", valid_audio_attributes
@@ -372,9 +387,7 @@ describe 'PatientsController' do
 
         describe "comment内容による @patient.audiogram.commentの変化について" do
           before do
-            Patient.where(hp_id: valid_id?(@valid_hp_id)).each do |p|
-              p.destroy
-            end
+            Patient.delete_all
             @patient = Patient.create! valid_attributes
           end
 
