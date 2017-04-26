@@ -9,9 +9,7 @@ FactoryGirl.find_definitions
 
 describe Patient do
   before do
-    Patient.all.each do |p|
-      p.destroy
-    end
+    Patient.delete_all
   end
 
   describe "hp_id が valid の場合" do

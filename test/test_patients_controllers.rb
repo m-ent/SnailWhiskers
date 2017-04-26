@@ -115,9 +115,12 @@ describe 'PatientsController' do
 
     describe "valid でない params を入力した場合" do
       before do
-        def id_validation_enable?  # 設定によらず強制的にvalidationを有効にしておく
-          true
-        end
+        @id_validation_tmp = Id_validation::state
+        Id_validation::enable  # 設定によらず強制的に validation を有効にしておく
+      end
+
+      after do
+        @id_validation_tmp ? Id_validation::enable : Id_validation::disable
       end
 
       it "patients の 数が増えないこと" do
@@ -263,11 +266,11 @@ describe 'PatientsController' do
     end
 
     it "validation 有効な時に invalid な hp_id で request した場合は HTTP status code 400を返すこと" do
-      def id_validation_enable?  # 設定によらず強制的に validation を有効にしておく
-        true
-      end
+      id_validation_tmp = Id_validation::state
+      Id_validation::enable  # 設定によらず強制的に validation を有効にしておく
       get "/patients_by_id/#{@invalid_hp_id}", valid_session
       last_response.status.must_equal 400
+      id_validation_tmp ? Id_validation::enable : Id_validation::disable
     end
   end
 
