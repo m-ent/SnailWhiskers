@@ -307,8 +307,43 @@ describe 'AudiogramsController' do
     end
   end
 
+  describe "PUT audiograms#edit_comment (/patients/:patient_id/audiograms/:id/edit_comment)" do
+    before do
+      @old_comment = "Old comment"
+      @new_comment = "New comment"
+      audiogram = Audiogram.create! valid_attributes
+      audiogram.comment = @old_comment
+      audiogram.save
+      @patient.audiograms = []
+      @patient.audiograms << audiogram
+      @audiogram = @patient.audiograms.first
+    end
+
+    it "commentを更新できること" do
+      @patient.audiograms.length.must_equal 1
+      @audiogram.comment.must_equal @old_comment
+      put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit_comment",\
+        params={comment: @new_comment}
+      @audiogram.reload.comment.must_equal @new_comment
+    end
+
+    it "redirectされること" do
+      put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit_comment",\
+        params={comment: @new_comment}
+      last_response.redirect?.must_equal true
+    end
+
+    it "redirect された先が、指定された patient/audiogram の view であること" do
+      put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit_comment",\
+        params={comment: @new_comment}
+      follow_redirect!
+      last_response.ok?.must_equal true
+      last_response.body.must_include \
+        "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id} -->"
+    end
+  end
+
 =begin
-#----------------------------------------------
   describe "GET new" do
     it "assigns a new audiogram as @audiogram" do
       get :new, {:patient_id => @patient.to_param}, valid_session
@@ -352,31 +387,6 @@ describe 'AudiogramsController' do
       end
     end
   end
-
-  describe "PUT edit_comment" do # /patients/:patient_id/audiograms/:id/edit_comment
-    before do
-      @old_comment = "Old comment"
-      @new_comment = "New comment"
-      audiogram = Audiogram.create! valid_attributes
-      audiogram.comment = @old_comment
-      audiogram.save
-      @patient.audiograms << audiogram
-      @audiogram = @patient.audiograms.first
-    end
-
-    it "commentを更新できること" do
-      expect(@patient.audiograms.length).to eq 1
-      expect(@audiogram.comment).to eq @old_comment
-      put :edit_comment, {:patient_id => @patient.to_param, :id => @audiogram.to_param, \
-	                  :comment => @new_comment}, valid_session
-      expect(@audiogram.reload.comment).to eq @new_comment
-    end
-
-    it "redirects to show the audiogram" do
-      put :edit_comment, {:patient_id => @patient.to_param, :id => @audiogram.to_param, \
-	                  :comment => @new_comment}, valid_session
-      expect(response).to redirect_to(patient_audiogram_url)
-    end
-  end
 =end
+
 end

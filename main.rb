@@ -189,12 +189,23 @@ class Main < Sinatra::Base
     end
   end
 
-  delete '/patients/:patient_id/audiograms/:id' do # patients#destroy
+  delete '/patients/:patient_id/audiograms/:id' do # audiograms#destroy
     protected!
     @patient = Patient.find(params[:patient_id])
     @audiogram = @patient.audiograms.find(params[:id])
     @audiogram.destroy
     redirect to("/patients/#{@patient.id}/audiograms")
+  end
+
+  put '/patients/:patient_id/audiograms/:id/edit_comment' do #audiograms#edit_comment
+    @patient = Patient.find(params[:patient_id])
+    @audiogram = @patient.audiograms.find(params[:id])
+    @audiogram.comment = params[:comment]
+    if @audiogram.update(select_params(params, [:comment]))
+      redirect to("/patients/#{@patient.id}/audiograms/#{@audiogram.id}")
+    else
+      erb :audiograms_edit # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! redirect 先を考慮
+    end
   end
 
 #  get '/patients/:patient_id/audiograms/new' do # audiograms#new
