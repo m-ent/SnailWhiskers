@@ -1,0 +1,16 @@
+/* Place all the styles related to the patients controller here. */
+
+h2.exam_title {
+  background-color: #c00;
+  color: #fff;
+  font-size: 150%;
+  line-height: 27px;
+  a {
+    color: #fff;
+    &:visited {
+      color: #fff; }
+    &:hover {
+      color: #fff;
+      background-color: #000; }
+  }
+}
