@@ -1,0 +1,14 @@
+/* Place all the styles related to the audiograms controller here. */
+
+table,td,th {
+  border: 1px #ccc solid;
+  border-collapse: collapse;
+}
+
+tr.colored {
+  background-color: #efe;
+}
+
+h1 {
+  font-size: 200%;
+}

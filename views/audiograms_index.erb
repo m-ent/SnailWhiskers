@@ -1,4 +1,5 @@
 <%= "<!-- /patients/#{@patient.id}/audiograms -->" %>
+<link rel="stylesheet" type="text/css" href="/css/audiograms.css" >
 <% require './helpers' %>
 
 <h1>Listing <%= pluralize(@patient.audiograms.length, "audiogram") %> for 
