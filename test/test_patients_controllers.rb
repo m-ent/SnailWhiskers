@@ -75,6 +75,46 @@ describe 'PatientsController' do
     it 'patients#index への link があること' do
       @response.body.must_include "patients>"
     end
+
+    describe 'audiogram の表示に関して' do
+      def create_audiogram(time, ac_rt_500, ac_rt_1k, ac_rt_2k)
+        Audiogram.create!(
+          examdate: Time.now, comment: "Comment",
+          image_location: "graphs_some_directory",
+          ac_rt_500: ac_rt_500, ac_rt_1k: ac_rt_1k, ac_rt_2k: ac_rt_2k,
+          ac_lt_500: 15, ac_lt_1k: 25, ac_lt_2k: 35,
+          audiometer: "Audiometer", hospital: "Hospital")
+      end
+
+      it 'patients が audiogram を持たないときに、No Audiogram と表示されること' do
+        @patient.audiograms = []
+        get "/patients/#{@patient.id}"
+        last_response.ok?.must_equal true
+        last_response.body.must_include "No Audiogram"
+      end
+
+      it 'patients が 1つの audiogram を持つときに、その Audiogram の情報が表示されること' do
+        @patient.audiograms = []
+        @patient.audiograms << create_audiogram(Time.now, 10, 20, 30)
+        get "/patients/#{@patient.id}"
+        last_response.ok?.must_equal true
+        last_response.body.must_include "1 exam"
+        last_response.body.must_include "R: 20"
+      end
+
+      it 'patients が 6つの audiogram を持つときに、最も古い Audiogram の情報が表示されないこと' do
+        @patient.audiograms = []
+        t = Time.now
+        6.times do |i|
+          ofs = 10 * i
+          @patient.audiograms << create_audiogram(t + ofs, 10 + ofs, 20 + ofs, 30 + ofs)
+        end
+        get "/patients/#{@patient.id}"
+        last_response.ok?.must_equal true
+        last_response.body.must_include "6 exams"
+        last_response.body.wont_include "R: 20"
+      end
+    end
   end
 
   describe "GET patients#new (/patients/new)" do
