@@ -1,6 +1,6 @@
 require File.expand_path '../test_helper.rb', __FILE__
 
-require 'factory_girl'
+require 'factory_bot'
 require './main'
 require './lib/id_validation'
 

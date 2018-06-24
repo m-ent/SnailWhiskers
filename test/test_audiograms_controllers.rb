@@ -1,15 +1,15 @@
 require File.expand_path '../test_helper.rb', __FILE__
 
-require 'factory_girl'
+require 'factory_bot'
 require './main'
 require './lib/id_validation'
 
-FactoryGirl.find_definitions
+FactoryBot.find_definitions
 
 describe 'AudiogramsController' do
   before do
     Patient.delete_all
-    @patient = FactoryGirl.create(:patient)
+    @patient = FactoryBot.create(:patient)
     @right_user = "audioadmin"
     @right_pw = "audioadmin"
     @wrong_pw = "wrong_password"

@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :patient do
     hp_id  "19"  # valid hp_id
   end
