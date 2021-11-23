@@ -14,5 +14,5 @@ group :test, :development do
   gem 'rack-test'
   gem 'factory_bot'
   gem 'minitest'
-  gem 'minitest-doc_reporter' # Rspec の様に spec のドキュメントを出力
+  gem 'minitest-reporters' # Rspec の様に spec のドキュメントを出力
 end
