@@ -39,23 +39,23 @@ describe 'AudiogramsController' do
       @response = last_response
     end
 
-    it "全ての audiogram が表示されること" do
-      @response.ok?.must_equal true
-      @response.body.must_include "<!-- /patients/#{@patient.id}/audiograms -->"
+    it "全ての audiogram が表示されること(all audiograms must be shown" do
+      _(@response.ok?).must_equal true
+      _(@response.body).must_include "<!-- /patients/#{@patient.id}/audiograms -->"
       @patient.audiograms.each do |audiogram|
         ex_date = audiogram.examdate.strftime("%Y/%m/%d")
         ex_time = audiogram.examdate.strftime("%X")
-        @response.body.must_include ex_date
-        @response.body.must_include ex_time
+        _(@response.body).must_include ex_date
+        _(@response.body).must_include ex_time
       end
     end
 
-    it 'patients#show への link があること' do
-      @response.body.must_include "patients/#{@patient.id}"
+    it 'patients#show への link があること(has a link to patients#show)' do
+      _(@response.body).must_include "patients/#{@patient.id}"
     end
 
-    it 'audiogram の数に応じて単数複数が表示されること' do
-      @response.body.must_match /1 audiogram[^s]/
+    it 'audiogram の数に応じて単数複数が表示されること(can use pluralization)' do
+      _(@response.body).must_match /1 audiogram[^s]/
       audiogram2 = Audiogram.create!(
         examdate: Time.now, comment: "Comment",
 	image_location: "graphs_some_directory",
@@ -65,25 +65,25 @@ describe 'AudiogramsController' do
       )
       @patient.audiograms << audiogram2
       get "/patients/#{@patient.id}/audiograms"
-      last_response.body.must_include "2 audiograms"
+      _(last_response.body).must_include "2 audiograms"
     end
 
-    it 'audiograms#show への link があること' do
+    it 'audiograms#show への link があること(has a link to audiograms#show)' do
       @patient.audiograms.each do |audiogram|
-        @response.body.must_include "patients/#{@patient.id}/audiograms/#{audiogram.id}"
+        _(@response.body).must_include "patients/#{@patient.id}/audiograms/#{audiogram.id}"
       end
     end
 
-    it 'audiograms#destroy への link があること' do
+    it 'audiograms#destroy への link があること(has a link to audigrams#destroy)' do
       @patient.audiograms.each do |audiogram|
-        @response.body.must_include \
+        _(@response.body).must_include \
           "<form action=\"/patients/#{@patient.id}/audiograms/#{audiogram.id}\" method=\"POST\">"
-        @response.body.must_include "<input type=\"hidden\" name=\"_method\" value=\"DELETE\">"
+        _(@response.body).must_include "<input type=\"hidden\" name=\"_method\" value=\"DELETE\">"
       end
     end
 
-    it 'audiograms#new への link があること' do
-      @response.body.must_include "patients/#{@patient.id}/audiograms/new"
+    it 'audiograms#new への link があること(has a link to audiograms#new)' do
+      _(@response.body).must_include "patients/#{@patient.id}/audiograms/new"
     end
   end
 
@@ -110,44 +110,44 @@ describe 'AudiogramsController' do
       @response = last_response
     end
 
-    it "指定された audiogram が表示されること" do
-      @response.ok?.must_equal true
-      @response.body.must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id} -->"
-      @response.body.must_include @audiogram.examdate.to_s
+    it "指定された audiogram が表示されること(shows the audiogram)" do
+      _(@response.ok?).must_equal true
+      _(@response.body).must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id} -->"
+      _(@response.body).must_include @audiogram.examdate.to_s
     end
 
-    it "4分法平均値が表示されること" do
-      @response.body.must_include '10.0'
-      @response.body.must_include '57.5'
+    it "4分法平均値が表示されること(shows the mean value of audiogram" do
+      _(@response.body).must_include '10.0'
+      _(@response.body).must_include '57.5'
     end
 
-    it 'audiogram のコメントが編集できること' do
-      @response.body.must_include "patients/#{@patient.id}/audiograms/#{@audiogram.id}"
-      @response.body.must_include '<input type="hidden" name="_method" value="PUT">'
-      @response.body.must_include '<input type="text" name="comment"'
-      @response.body.must_include '<input type="submit"'
+    it 'audiogram のコメントが編集できること(can edit a comment)' do
+      _(@response.body).must_include "patients/#{@patient.id}/audiograms/#{@audiogram.id}"
+      _(@response.body).must_include '<input type="hidden" name="_method" value="PUT">'
+      _(@response.body).must_include '<input type="text" name="comment"'
+      _(@response.body).must_include '<input type="submit"'
     end
 
-    it '印刷ボタンが表示されること' do
-      @response.body.must_match /<input type.+button.+onclick.+print()/
+    it '印刷ボタンが表示されること(can show a [print] button' do
+      _(@response.body).must_match /<input type.+button.+onclick.+print()/
     end
 
-    it 'audiogram 一覧 (audiograms#index) への link があること' do
-      @response.body.must_include "patients/#{@patient.id}/audiograms"
+    it 'audiogram 一覧 (audiograms#index) への link があること(has a link to audiograms#index)' do
+      _(@response.body).must_include "patients/#{@patient.id}/audiograms"
     end
 
-    it "聴検の画像が保存されている場合、画像が更新されないこと" do
+    it "聴検の画像が保存されている場合、画像が更新されないこと(doesn't touch the graph when the graph was already saved)" do
       content = String.new
       File::open(@image_file) do |f|
         content = f.read
       end
-      content.must_equal @test_str
+      _(content).must_equal @test_str
     end
 
-    it "聴検の画像が保存されていない場合、画像を作成すること" do
+    it "聴検の画像が保存されていない場合、画像を作成すること(make a graph when the graph hasn't be saved)" do
       File::delete(@image_file) if File.exist?(@image_file)
       get "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
-      File.exist?(@image_file).must_equal true
+      _(File.exist?(@image_file)).must_equal true
     end
   end
 
@@ -157,37 +157,37 @@ describe 'AudiogramsController' do
       @patient.audiograms << @audiogram
     end
 
-    describe "basic認証をpassする場合" do
+    describe "basic認証をpassする場合(when basic-auth was passed)" do
       before do
         basic_authorize @right_user, @right_pw
         get "/patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit"
         @response = last_response
       end
 
-      it "指定された patient, audiogram の編集画面が得られること" do
-        @response.ok?.must_equal true
-        @response.body.must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit -->"
+      it "指定された patient, audiogram の編集画面が得られること(can get a edit page of the audiogram of the patient)" do
+        _(@response.ok?).must_equal true
+        _(@response.body).must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit -->"
       end
 
-      it "post /patients へ遷移する form を持つこと" do
-        @response.body.must_match \
+      it "post /patients へ遷移する form を持つこと(has a form to migrate to 'post /patients'" do
+        _(@response.body).must_match \
           Regexp.new("form action=\"/patients/#{@patient.id}/audiograms/#{@audiogram.id}\" method=\"POST\"")
-        @response.body.must_match Regexp.new("name=\"_method\" value=\"PUT\"")
+        _(@response.body).must_match Regexp.new("name=\"_method\" value=\"PUT\"")
       end
     end
 
-    describe "basic認証をpassしない場合" do
-      it "401 status code (Unauthorized) が帰ってくること" do
+    describe "basic認証をpassしない場合(when basic-auth was not passed" do
+      it "401 status code [Unauthorized] が帰ってくること(returns 401[Unauthorized])" do
         basic_authorize @right_user, @wrong_pw
         get "/patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit"
-        last_response.status.must_equal 401
+        _(last_response.status).must_equal 401
       end
     end
 
-    describe "basic認証に対して username:password を提示しない場合" do
-      it "401 status code (Unauthorized) が帰ってくること" do
+    describe "basic認証に対して username:password を提示しない場合(when not given username:password to basic-auth)" do
+      it "401 status code [Unauthorized] が帰ってくること(returns 401[Unautorized])" do
         get "/patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit"
-        last_response.status.must_equal 401
+        _(last_response.status).must_equal 401
       end
     end
   end
@@ -198,40 +198,40 @@ describe 'AudiogramsController' do
       @patient.audiograms << @audiogram
     end
 
-    describe "valid params を入力した場合" do
-      it "指定された audiogram が update されること" do
+    describe "valid params を入力した場合(when params were valid)" do
+      it "指定された audiogram が update されること(updates the audiogram)" do
         put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: 'update',\
                                                                             examdate: Time.now}
         audiogram_reloaded = Audiogram.find(@audiogram.id)
-        audiogram_reloaded.audiometer.wont_equal @audiogram.audiometer
+        _(audiogram_reloaded.audiometer).wont_equal @audiogram.audiometer
       end
 
-      it "redirect されること" do
+      it "redirect されること(redirects the page)" do
         put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: @audiogram.audiometer,\
                                                                             examdate: @audiogram.examdate}
-        last_response.redirect?.must_equal true
+        _(last_response.redirect?).must_equal true
       end
 
-      it "redirect された先が、指定された patient/audiogram の view であること" do
+      it "redirect された先が、指定された patient/audiogram の view であること(redirects to the view of the audiogram of the patient)" do
         put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: @audiogram.audiometer,\
                                                                             examdate: @audiogram.examdate}
         follow_redirect!
-        last_response.ok?.must_equal true
-        last_response.body.must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id} -->"
+        _(last_response.ok?).must_equal true
+        _(last_response.body).must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id} -->"
       end
     end
 
-    describe "valid でない params を入力した場合" do
-      it "指定された patient が update されないこと" do
+    describe "valid でない params を入力した場合(when params were not valid)" do
+      it "指定された patient が update されないこと(doesn't update the patient)" do
         put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: nil}
         audiogram_reloaded = Audiogram.find(@audiogram.id)
-        audiogram_reloaded.audiometer.must_equal @audiogram.audiometer
+        _(audiogram_reloaded.audiometer).must_equal @audiogram.audiometer
       end
 
-      it "/patients/:patient_id/audiograms/:id/edit の view を表示すること" do
+      it "/patients/:patient_id/audiograms/:id/edit の view を表示すること(shows the view of /patients/:patient_id/audiograms/:id/edit" do
         put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: nil}
-        last_response.ok?.must_equal true
-        last_response.body.must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit -->"
+        _(last_response.ok?).must_equal true
+        _(last_response.body).must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit -->"
       end
     end
   end
@@ -242,67 +242,67 @@ describe 'AudiogramsController' do
       @patient.audiograms << @audiogram
     end
 
-    describe "basic認証に対して username:password を提示しない場合" do
-      it "指定された audiogram が削除されないこと" do
+    describe "basic認証に対して username:password を提示しない場合(when username:password were not given to basic-auth)" do
+      it "指定された audiogram が削除されないこと(doen't delete the audiogram)" do
         audiogram_num = Audiogram.all.length
         delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
-        Audiogram.all.length.must_equal audiogram_num
+        _(Audiogram.all.length).must_equal audiogram_num
       end
 
-      it "redirect されないこと" do
+      it "redirect されないこと(doesn't redirect)" do
         delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
-        last_response.redirect?.wont_equal true
+        _(last_response.redirect?).wont_equal true
       end
 
-      it "401 status code (Unauthorized) が帰ってくること" do
+      it "401 status code [Unauthorized] が帰ってくること(returns 401[Unauthorized]" do
         delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
-        last_response.status.must_equal 401
+        _(last_response.status).must_equal 401
       end
     end
 
-    describe "basic認証をpassしない場合" do
+    describe "basic認証をpassしない場合(when basic-auth didn't pass)" do
       before do
         basic_authorize @right_user, @wrong_pw
       end
 
-      it "指定された audiogram が削除されないこと" do
+      it "指定された audiogram が削除されないこと(doesn't delete the audiogram)" do
         audiogram_num = Audiogram.all.length
         delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
-        Audiogram.all.length.must_equal audiogram_num
+        _(Audiogram.all.length).must_equal audiogram_num
       end
 
-      it "redirect されないこと" do
+      it "redirect されないこと(doesn't redirect)" do
         delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
-        last_response.redirect?.wont_equal true
+        _(last_response.redirect?).wont_equal true
       end
 
-      it "401 status code (Unauthorized) が帰ってくること" do
+      it "401 status code [Unauthorized] が帰ってくること(returns 401[Unauthorized]" do
         delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
-        last_response.status.must_equal 401
+        _(last_response.status).must_equal 401
       end
     end
 
-    describe "basic認証をpassする場合" do
+    describe "basic認証をpassする場合(when basic-auth passed" do
       before do
         basic_authorize @right_user, @right_pw
       end
 
-      it "指定された audiogram を削除すること" do
+      it "指定された audiogram を削除すること(delete the audiogram)" do
         audiogram_num = Audiogram.all.length
         delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
-        Audiogram.all.length.must_equal (audiogram_num - 1)
+        _(Audiogram.all.length).must_equal (audiogram_num - 1)
       end
 
-      it "redirect されること" do
+      it "redirect されること(redirects)" do
         delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
-        last_response.redirect?.must_equal true
+        _(last_response.redirect?).must_equal true
       end
 
-      it "redirect 先が、全ての audiogams のリストであること" do
+      it "redirect 先が、全ての audiogams のリストであること(redirects to the list of all audiograms)" do
         delete "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
         follow_redirect!
-        last_response.ok?.must_equal true
-        last_response.body.must_include "<!-- /patients/#{@patient.id}/audiograms -->"
+        _(last_response.ok?).must_equal true
+        _(last_response.body).must_include "<!-- /patients/#{@patient.id}/audiograms -->"
       end
     end
   end
@@ -319,26 +319,26 @@ describe 'AudiogramsController' do
       @audiogram = @patient.audiograms.first
     end
 
-    it "commentを更新できること" do
-      @patient.audiograms.length.must_equal 1
-      @audiogram.comment.must_equal @old_comment
+    it "commentを更新できること(update the comment)" do
+      _(@patient.audiograms.length).must_equal 1
+      _(@audiogram.comment).must_equal @old_comment
       put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit_comment",\
         params={comment: @new_comment}
-      @audiogram.reload.comment.must_equal @new_comment
+      _(@audiogram.reload.comment).must_equal @new_comment
     end
 
-    it "redirectされること" do
+    it "redirectされること(redirects)" do
       put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit_comment",\
         params={comment: @new_comment}
-      last_response.redirect?.must_equal true
+      _(last_response.redirect?).must_equal true
     end
 
-    it "redirect された先が、指定された patient/audiogram の view であること" do
+    it "redirect された先が、指定された patient/audiogram の view であること(redirects to the view of the audiogram of the patient)" do
       put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit_comment",\
         params={comment: @new_comment}
       follow_redirect!
-      last_response.ok?.must_equal true
-      last_response.body.must_include \
+      _(last_response.ok?).must_equal true
+      _(last_response.body).must_include \
         "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id} -->"
     end
   end
