@@ -1,28 +1,28 @@
 FactoryBot.define do
   factory :patient do
-    hp_id  "19"  # valid hp_id
+    hp_id { "19" } # valid hp_id
   end
 
   factory :audiogram do
-    examdate Time.now
-    comment nil
-    audiometer "AA-79S"
-    hospital "Hospital_A"
-    image_location nil
-    manual_input nil
+    examdate { Time.now }
+    comment { nil }
+    audiometer { "AA-79S" }
+    hospital { "Hospital_A" }
+    image_location { nil }
+    manual_input { nil }
 #    ac_rt_125 
 #    ac_rt_250 
-    ac_rt_500   10
-    ac_rt_1k    20
-    ac_rt_2k    30
-    ac_rt_4k    40
+    ac_rt_500 { 10 }
+    ac_rt_1k  { 20 }
+    ac_rt_2k  { 30 }
+    ac_rt_4k  { 40 }
 #    ac_rt_8k 
 #    ac_lt_125 
 #    ac_lt_250 
-    ac_lt_500   15
-    ac_lt_1k    25
-    ac_lt_2k    30
-    ac_lt_4k    45
+    ac_lt_500 { 15 }
+    ac_lt_1k  { 25 }
+    ac_lt_2k  { 30 }
+    ac_lt_4k  { 45 }
 #    ac_lt_8k 
 =begin
     ac_rt_125_scaleout 
