@@ -30,30 +30,30 @@ describe 'PatientsController' do
       @response = last_response
     end
 
-    it "全ての patient が表示されること" do
-      @response.ok?.must_equal true
-      @response.body.must_include "<!-- /patients -->"
-      @response.body.must_include "#{@patients.length} patient"
+    it "全ての patient が表示されること(shows all patients)" do
+      _(@response.ok?).must_equal true
+      _(@response.body).must_include "<!-- /patients -->"
+      _(@response.body).must_include "#{@patients.length} patient"
       @patients.each do |patient|
-        @response.body.must_include patient.hp_id
+         _(@response.body).must_include patient.hp_id
       end
     end
 
-    it 'patients#show への link があること' do
+    it 'patients#show への link があること(has a link to patients#show)' do
       @patients.each do |patient|
-        @response.body.must_include "patients/#{patient.id}"
+        _(@response.body).must_include "patients/#{patient.id}"
       end
     end
 
-    it 'patients#destroy への link があること' do
+    it 'patients#destroy への link があること(has a link to patients#destroy)' do
       @patients.each do |patient|
-        @response.body.must_include "<form action=\"/patients/#{patient.id}\" method=\"POST\">"
-        @response.body.must_include "<input type=\"hidden\" name=\"_method\" value=\"DELETE\">"
+        _(@response.body).must_include "<form action=\"/patients/#{patient.id}\" method=\"POST\">"
+        _(@response.body).must_include "<input type=\"hidden\" name=\"_method\" value=\"DELETE\">"
       end
     end
 
-    it 'patients#new への link があること' do
-      @response.body.must_include "patients/new"
+    it 'patients#new への link があること(has a link to patients#new)' do
+      _(@response.body).must_include "patients/new"
     end
   end
 
@@ -66,17 +66,17 @@ describe 'PatientsController' do
       @response = last_response
     end
 
-    it "指定された patient が表示されること" do
-      @response.ok?.must_equal true
-      @response.body.must_include "<!-- /patients/#{@patient.id} -->"
-      @response.body.must_include "#{@target_hp_id[0..4]}-#{@target_hp_id[5..9]}" # 00000-00019 を含むか
+    it "指定された patient が表示されること(shows the patient)" do
+      _(@response.ok?).must_equal true
+      _(@response.body).must_include "<!-- /patients/#{@patient.id} -->"
+      _(@response.body).must_include "#{@target_hp_id[0..4]}-#{@target_hp_id[5..9]}" # 00000-00019 を含むか
     end
 
-    it 'patients#index への link があること' do
-      @response.body.must_include "patients>"
+    it 'patients#index への link があること(has a link to patients#index)' do
+      _(@response.body).must_include "patients>"
     end
 
-    describe 'audiogram の表示に関して' do
+    describe 'audiogram の表示に関して(about displaying the audiogram:)' do
       def create_audiogram(time, ac_rt_500, ac_rt_1k, ac_rt_2k)
         Audiogram.create!(
           examdate: Time.now, comment: "Comment",
@@ -86,23 +86,23 @@ describe 'PatientsController' do
           audiometer: "Audiometer", hospital: "Hospital")
       end
 
-      it 'patients が audiogram を持たないときに、No Audiogram と表示されること' do
+      it 'patients が audiogram を持たないときに、No Audiogram と表示されること(shows \'No Audiogram\' when the patient has no audiogram)' do
         @patient.audiograms = []
         get "/patients/#{@patient.id}"
-        last_response.ok?.must_equal true
-        last_response.body.must_include "No Audiogram"
+        _(last_response.ok?).must_equal true
+        _(last_response.body).must_include "No Audiogram"
       end
 
-      it 'patients が 1つの audiogram を持つときに、その Audiogram の情報が表示されること' do
+      it 'patients が 1つの audiogram を持つときに、その Audiogram の情報が表示されること(shows information about the audiogram when the patient has only one audiogram)' do
         @patient.audiograms = []
         @patient.audiograms << create_audiogram(Time.now, 10, 20, 30)
         get "/patients/#{@patient.id}"
-        last_response.ok?.must_equal true
-        last_response.body.must_include "1 exam"
-        last_response.body.must_include "R: 20"
+        _(last_response.ok?).must_equal true
+        _(last_response.body).must_include "1 exam"
+        _(last_response.body).must_include "R: 20"
       end
 
-      it 'patients が 6つの audiogram を持つときに、最も古い Audiogram の情報が表示されないこと' do
+      it 'patients が 6つの audiogram を持つときに、最も古い Audiogram の情報が表示されないこと(shows no information about the oldest audiogram, when the patient has 6 audiograms)' do
         @patient.audiograms = []
         t = Time.now
         6.times do |i|
@@ -110,19 +110,19 @@ describe 'PatientsController' do
           @patient.audiograms << create_audiogram(t + ofs, 10 + ofs, 20 + ofs, 30 + ofs)
         end
         get "/patients/#{@patient.id}"
-        last_response.ok?.must_equal true
-        last_response.body.must_include "6 exams"
-        last_response.body.wont_include "R: 20"
+        _(last_response.ok?).must_equal true
+        _(last_response.body).must_include "6 exams"
+        _(last_response.body).wont_include "R: 20"
       end
     end
   end
 
   describe "GET patients#new (/patients/new)" do
-    it "hp_id の入力を持ち、post /patients へ遷移する form を持つこと" do
+    it "hp_id の入力を持ち、post /patients へ遷移する form を持つこと(has an input field for hp_id, and a form migrating to \'post /patients\')" do
       get "/patients/new"
-      last_response.body.must_include "<!-- /patients/new -->"
-      last_response.body.must_match /form action='\/patients' method='POST'/
-      last_response.body.must_match /input type='text' name='hp_id'/
+      _(last_response.body).must_include "<!-- /patients/new -->"
+      _(last_response.body).must_match /form action='\/patients' method='POST'/
+      _(last_response.body).must_match /input type='text' name='hp_id'/
     end
   end
 
@@ -131,29 +131,29 @@ describe 'PatientsController' do
       Patient.delete_all
     end
 
-    describe "valid params を入力した場合" do
-      it "新しく Patient を作成すること" do
+    describe "valid params を入力した場合(when params are valid)" do
+      it "新しく Patient を作成すること(creates a new patient)" do
         patient_num = Patient.all.length
         post "/patients", valid_attributes, valid_session
-        Patient.all.length.must_equal (patient_num + 1)
+        _(Patient.all.length).must_equal (patient_num + 1)
       end
 
-      it "redirect されること" do
+      it "redirect されること(redirects)" do
         post "/patients", valid_attributes, valid_session
-        last_response.redirect?.must_equal true
+        _(last_response.redirect?).must_equal true
       end
 
-      it "redirect された先が、作成された patient の view であること" do
+      it "redirect された先が、作成された patient の view であること(redirects to the view of the created patient)" do
         post "/patients", valid_attributes, valid_session
         follow_redirect!
-        last_response.ok?.must_equal true
+        _(last_response.ok?).must_equal true
         patient = Patient.last
-        last_response.body.must_include "<!-- /patients/#{patient.id} -->"
-        last_response.body.must_include "#{patient.hp_id[0..4]}-#{patient.hp_id[5..9]}" # 00000-00019 を含むか
+        _(last_response.body).must_include "<!-- /patients/#{patient.id} -->"
+        _(last_response.body).must_include "#{patient.hp_id[0..4]}-#{patient.hp_id[5..9]}" # 00000-00019 を含むか
       end
     end
 
-    describe "valid でない params を入力した場合" do
+    describe "valid でない params を入力した場合(when params are not valid)" do
       before do
         @id_validation_tmp = Id_validation::state
         Id_validation::enable  # 設定によらず強制的に validation を有効にしておく
@@ -163,26 +163,26 @@ describe 'PatientsController' do
         @id_validation_tmp ? Id_validation::enable : Id_validation::disable
       end
 
-      it "patients の 数が増えないこと" do
+      it "patients の 数が増えないこと(do not increase the number of patients)" do
         patient_num = Patient.all.length
         post "/patients", :hp_id => 'invalid id' #, valid_session
-        Patient.all.length.must_equal patient_num
+        _(Patient.all.length).must_equal patient_num
       end
 
-      it "/patients/new の view を表示すること" do
+      it "/patients/new の view を表示すること(shows the view of \'/patients/new\')" do
         post "/patients", :hp_id => 'invalid id' #, valid_session
-        last_response.ok?.must_equal true
-        last_response.body.must_include "<!-- /patients/new -->"
+        _(last_response.ok?).must_equal true
+        _(last_response.body).must_include "<!-- /patients/new -->"
       end
     end
 
-    describe "hp_id が重複する場合" do
-      it "patients の 数が増えないこと" do
+    describe "hp_id が重複する場合(when collision occurs in hp_id)" do
+      it "patients の 数が増えないこと(do not increase the number of patients)" do
         Patient.delete_all
         Patient.create!(hp_id: valid_id?(@valid_id1)) # 0000000019
         patient_num = Patient.all.length
         post "/patients", :hp_id => valid_id?(@valid_id1)
-        Patient.all.length.must_equal patient_num
+        _(Patient.all.length).must_equal patient_num
       end
     end
   end
@@ -195,15 +195,15 @@ describe 'PatientsController' do
       @response = last_response
     end
 
-    it "指定された patient の編集画面が得られること" do
-      @response.ok?.must_equal true
-      @response.body.must_include "<!-- /patients/#{@patient.id}/edit -->"
+    it "指定された patient の編集画面が得られること(shows an editing page of the patient)" do
+      _(@response.ok?).must_equal true
+      _(@response.body).must_include "<!-- /patients/#{@patient.id}/edit -->"
     end
 
-    it "post /patients へ遷移する form を持つこと" do
-      @response.body.must_match Regexp.new("form action=\"/patients/#{@patient.id}\" method=\"POST\"") 
-      @response.body.must_match Regexp.new("name=\"_method\" value=\"PUT\"") 
-      @response.body.must_match Regexp.new("input type=\"text\" name=\"hp_id\"")
+    it "post /patients へ遷移する form を持つこと(has a form migrating to \'past /patients\')" do
+      _(@response.body).must_match Regexp.new("form action=\"/patients/#{@patient.id}\" method=\"POST\"") 
+      _(@response.body).must_match Regexp.new("name=\"_method\" value=\"PUT\"") 
+      _(@response.body).must_match Regexp.new("input type=\"text\" name=\"hp_id\"")
     end
   end
 
@@ -213,37 +213,37 @@ describe 'PatientsController' do
       @patient = Patient.create! valid_attributes
     end
 
-    describe "valid params を入力した場合" do
-      it "指定された patient が update されること" do
+    describe "valid params を入力した場合(when params are valid:" do
+      it "指定された patient が update されること(updates the patient)" do
         put "/patients/#{@patient.id}", params={hp_id: valid_id?(@valid_id2)} # 000000027
         patient_reloaded = Patient.find(@patient.id)
-        patient_reloaded.hp_id.wont_equal @patient.hp_id
+        _(patient_reloaded.hp_id).wont_equal @patient.hp_id
       end
 
-      it "redirect されること" do
+      it "redirect されること(redirects)" do
         put "/patients/#{@patient.id}", params={hp_id: @patient.hp_id}
-        last_response.redirect?.must_equal true
+        _(last_response.redirect?).must_equal true
       end
 
-      it "redirect された先が、指定された patient の view であること" do
+      it "redirect された先が、指定された patient の view であること(redirects to a view of the patient)" do
         put "/patients/#{@patient.id}", params={hp_id: @patient.hp_id}
         follow_redirect!
-        last_response.ok?.must_equal true
-        last_response.body.must_include "<!-- /patients/#{@patient.id} -->"
+        _(last_response.ok?).must_equal true
+        _(last_response.body).must_include "<!-- /patients/#{@patient.id} -->"
       end
     end
 
-    describe "valid でない params を入力した場合" do
-      it "指定された patient が update されないこと" do
+    describe "valid でない params を入力した場合(when params are not valid)" do
+      it "指定された patient が update されないこと(do not update the patient)" do
         put "/patients/#{@patient.id}", params={hp_id: 'invalid id'}
         patient_reloaded = Patient.find(@patient.id)
-        patient_reloaded.hp_id.must_equal @patient.hp_id
+        _(patient_reloaded.hp_id).must_equal @patient.hp_id
       end
 
-      it "/patients/:id/edit の view を表示すること" do
+      it "/patients/:id/edit の view を表示すること(shows a view of /patients/:id/edit)" do
         put "/patients/#{@patient.id}", params={hp_id: 'invalid id'}
-        last_response.ok?.must_equal true
-        last_response.body.must_include "<!-- /patients/#{@patient.id}/edit -->"
+        _(last_response.ok?).must_equal true
+        _(last_response.body).must_include "<!-- /patients/#{@patient.id}/edit -->"
       end
     end
   end
@@ -254,27 +254,27 @@ describe 'PatientsController' do
       @patient = Patient.create! valid_attributes
     end
 
-    it "指定された patient を削除すること" do
+    it "指定された patient を削除すること(delete the patient)" do
       patient_num = Patient.all.length
       delete "/patients/#{@patient.id}"
-      Patient.all.length.must_equal (patient_num - 1)
+      _(Patient.all.length).must_equal (patient_num - 1)
     end
 
-    it "redirect されること" do
+    it "redirect されること(redirects)" do
       delete "/patients/#{@patient.id}"
-      last_response.redirect?.must_equal true
+      _(last_response.redirect?).must_equal true
     end
 
-    it "redirect 先が、全ての patients のリストであること" do
+    it "redirect 先が、全ての patients のリストであること(redirects to the list of all patients)" do
       delete "/patients/#{@patient.id}"
       follow_redirect!
-      last_response.ok?.must_equal true
-      last_response.body.must_include "<!-- /patients -->"
+      _(last_response.ok?).must_equal true
+      _(last_response.body).must_include "<!-- /patients -->"
     end
   end
 
   describe "GET patients_by_id (/patients_by_id/:hp_id)" do
-    describe "validな hp_idで requestした場合" do
+    describe "validな hp_idで requestした場合(when requested by a valid hp_id)" do
       before do
         target_hp_id = valid_id?(@valid_id1) # 0000000019
         Patient.delete_all
@@ -283,33 +283,33 @@ describe 'PatientsController' do
         get "/patients_by_id/#{@hp_id}", valid_session
       end
 
-      it "redirect されること" do
-        last_response.redirect?.must_equal true
+      it "redirect されること(redirects)" do
+        _(last_response.redirect?).must_equal true
       end
 
-      it "redirect 先が、指定の patient の view であること" do
+      it "redirect 先が、指定の patient の view であること(redirects to the view of the patient)" do
         follow_redirect!
-        last_response.ok?.must_equal true
-        last_response.body.must_include "<!-- /patients/#{@patient.id} -->"
-        last_response.body.must_include "#{@hp_id[0..4]}-#{@hp_id[5..9]}" # 00000-00019 を含むか
+        _(last_response.ok?).must_equal true
+        _(last_response.body).must_include "<!-- /patients/#{@patient.id} -->"
+        _(last_response.body).must_include "#{@hp_id[0..4]}-#{@hp_id[5..9]}" # 00000-00019 を含むか
       end
     end
 
-    it "存在しない、validな hp_idで requestした場合、HTTP status code 404を返すこと" do
+    it "存在しない、validな hp_idで requestした場合、HTTP status code 404を返すこと(retrun 404 if requested by a valid but not-saved hp_id)" do
       target_hp_id = valid_id?(@valid_id1) # 0000000019
       Patient.delete_all
       patient = Patient.create! valid_attributes
       hp_id = patient.hp_id
       patient.delete
       get "/patients_by_id/#{@hp_id}", valid_session
-      last_response.status.must_equal 404
+      _(last_response.status).must_equal 404
     end
 
-    it "validation 有効な時に invalid な hp_id で request した場合は HTTP status code 400を返すこと" do
+    it "validation 有効な時に invalid な hp_id で request した場合は HTTP status code 400 [Bad request] を返すこと(return 400 [Bad request] when requested by invalid hp_id, under enabled validation)" do
       id_validation_tmp = Id_validation::state
       Id_validation::enable  # 設定によらず強制的に validation を有効にしておく
       get "/patients_by_id/#{@invalid_hp_id}", valid_session
-      last_response.status.must_equal 400
+      _(last_response.status).must_equal 400
       id_validation_tmp ? Id_validation::enable : Id_validation::disable
     end
   end
@@ -338,7 +338,7 @@ describe 'PatientsController' do
       Patient.delete_all
     end
 
-    describe "audiometer のデータが送られた場合" do
+    describe "audiometer のデータが送られた場合(when an audiogram data was send}" do
       before do
         @equip_name = "audiometer"
         @datatype = "audiogram"
@@ -348,70 +348,70 @@ describe 'PatientsController' do
         #L  30  35  40  45  50  55  60
       end
 
-      it "datatypeがない場合 HTTP status code 400を返すこと" do
+      it "datatypeがない場合 HTTP status code 400 [Bad request] を返すこと(return 400 [Bad request] without \'datatype\')" do
         post "/patients_by_id/#{@valid_hp_id}/create_exam", audio_attributes_wo_datatype
-        last_response.status.must_equal 400
+        _(last_response.status).must_equal 400
       end
 
-      describe "datatypeがaudiogramの場合" do
-        it "正しいパラメータの場合、Audiogramのアイテム数が1増えること" do
+      describe "datatypeがaudiogramの場合(when \'datatype\' is \'audiogram\')" do
+        it "正しいパラメータの場合、Audiogramのアイテム数が1増えること(increase the number of Audiograms if params are regular)" do
           audiogram_num = Audiogram.all.length
           post "/patients_by_id/#{@valid_hp_id}/create_exam", valid_audio_attributes
-          Audiogram.all.length.must_equal (audiogram_num + 1)
+          _(Audiogram.all.length).must_equal (audiogram_num + 1)
         end
 
-        it "正しいパラメータの場合、maskingのデータが取得されること" do
+        it "正しいパラメータの場合、maskingのデータが取得されること(can get masking data if params are regular)" do
           post "/patients_by_id/#{@valid_hp_id}/create_exam", valid_audio_attributes
-          Audiogram.last.mask_ac_rt_125.wont_equal nil
+          _(Audiogram.last.mask_ac_rt_125).wont_equal nil
         end
 
-        it "正しいパラメータの場合、HTTP status code 204を返すこと" do
+        it "正しいパラメータの場合、HTTP status code 204 [No content] を返すこと(return 204 [No content] if params are regular)" do
           post "/patients_by_id/#{@valid_hp_id}/create_exam", valid_audio_attributes
-          last_response.status.must_equal 204
+          _(last_response.status).must_equal 204
         end
 
-        it "正しいパラメータの場合、所定の位置にグラフとサムネイルが作られること" do
+        it "正しいパラメータの場合、所定の位置にグラフとサムネイルが作られること(create a graph and its thumbnail in appropriate location if params are regular)" do
           post "/patients_by_id/#{@valid_hp_id}/create_exam", valid_audio_attributes
           img_loc = "assets/images/#{Audiogram.last.image_location}"
           thumb_loc = img_loc.sub("graphs", "thumbnails")
-          File::exists?(img_loc).must_equal true
-          File::exists?(thumb_loc).must_equal true
+          _(File::exists?(img_loc)).must_equal true
+          _(File::exists?(thumb_loc)).must_equal true
         end
 
-        describe "invalid な ID でリクエストした場合" do
-          it "ID valdationが有効な場合、HTTP status code 400を返すこと" do
+        describe "invalid な ID でリクエストした場合(when requested by invalid ID)" do
+          it "ID valdationが有効な場合、HTTP status code 400 [Bad request] を返すこと(return 400 [Bad request] if ID validation is enable)" do
             id_validation_tmp = Id_validation::state
             Id_validation::enable
             post "/patients_by_id/#{@invalid_hp_id}/create_exam", valid_audio_attributes
             id_validation_tmp ? Id_validation::enable : Id_validation::disable
-            last_response.status.must_equal 400
+            _(last_response.status).must_equal 400
           end
 
-          it "ID valdationが無効な場合、HTTP status code 204を返すこと" do
+          it "ID valdationが無効な場合、HTTP status code 204 [No content] を返すこと(return 204 [No content] if ID validation is enable)" do
             id_validation_tmp = Id_validation::state
             Id_validation::disable
             post "/patients_by_id/#{valid_id?(@invalid_hp_id)}/create_exam", valid_audio_attributes
             id_validation_tmp ? Id_validation::enable : Id_validation::disable
-            last_response.status.must_equal 204
+            _(last_response.status).must_equal 204
           end
         end
 
-        it "equip_nameの入力がない場合、HTTP status code 400を返すこと" do
+        it "equip_nameの入力がない場合、HTTP status code 400を返すこと(return 400 [Bad request] if equip_name was not given)" do
           post "/patients_by_id/#{@valid_hp_id}/create_exam", audio_attributes_wo_equip_name
-          last_response.status.must_equal 400
+          _(last_response.status).must_equal 400
         end
 
-        it "dataがない場合、HTTP status cod@e 400を返すこと" do
+        it "dataがない場合、HTTP status cod@e 400を返すこと(return 400 [Bad request] if no data was given)" do
           post "/patients_by_id/#{@valid_hp_id}/create_exam", audio_attributes_wo_data
-          last_response.status.must_equal 400
+          _(last_response.status).must_equal 400
         end
 
-        it "data形式が不正の場合、HTTP status code 400を返すこと" do
+        it "data形式が不正の場合、HTTP status code 400を返すこと(return 400 [Bad request] if data was irregular)" do
           post "/patients_by_id/#{@valid_hp_id}/create_exam", audio_attributes_w_invalid_data
-          last_response.status.must_equal 400
+          _(last_response.status).must_equal 400
         end
 
-        describe "hp_idが存在しない場合" do
+        describe "hp_idが存在しない場合(when the hp_id was not saved:)" do
           before do
             Patient.delete_all
             @patient_num = Patient.all.length
@@ -419,16 +419,16 @@ describe 'PatientsController' do
             post "/patients_by_id/#{@valid_hp_id}/create_exam", valid_audio_attributes
           end
 
-          it "新たにPatientのインスタンスを作る(Patientのアイテム数が1増える)こと" do
-            Patient.all.length.must_equal (@patient_num + 1)
+          it "新たにPatientのインスタンスを作る(Patientのアイテム数が1増える)こと(create a new Patient instance)" do
+            _(Patient.all.length).must_equal (@patient_num + 1)
           end
 
-          it "(新たにPatientを作成し) Audiogramのアイテム数が1増えること" do
-            Audiogram.all.length.must_equal (@audiogram_num + 1)
+          it "(新たにPatientを作成し) Audiogramのアイテム数が1増えること(increase the number of audiograms" do
+            _(Audiogram.all.length).must_equal (@audiogram_num + 1)
           end
         end
 
-        describe "comment内容による @patient.audiogram.commentの変化について" do
+        describe "comment内容による @patient.audiogram.commentの変化について(about @patient.audiogram.comment:)" do
           before do
             Patient.delete_all
             @patient = Patient.create! valid_attributes
@@ -442,26 +442,26 @@ describe 'PatientsController' do
             @patient.reload
           end
 
-          it "1つのcommentがある場合、それに応じたコメントが記録されること" do
+          it "1つのcommentがある場合、それに応じたコメントが記録されること(records an adequate comment if one comment was given)" do
             create_with_comment("RETRY_")
-            @patient.audiograms.last.comment.must_match /再検査\(RETRY\)/
+            _(@patient.audiograms.last.comment).must_match /再検査\(RETRY\)/
             create_with_comment("MASK_")
-            @patient.audiograms.last.comment.must_match /マスキング変更\(MASK\)/
+            _(@patient.audiograms.last.comment).must_match /マスキング変更\(MASK\)/
             create_with_comment("PATCH_")
-            @patient.audiograms.last.comment.must_match /パッチテスト\(PATCH\)/
+            _(@patient.audiograms.last.comment).must_match /パッチテスト\(PATCH\)/
             create_with_comment("MED_")
-            @patient.audiograms.last.comment.must_match /薬剤投与後\(MED\)/
+            _(@patient.audiograms.last.comment).must_match /薬剤投与後\(MED\)/
             create_with_comment("OTHER:幾つかのコメント_")
-            @patient.audiograms.last.comment.must_match /^・幾つかのコメント/
+            _(@patient.audiograms.last.comment).must_match /^・幾つかのコメント/
           end
 
-          it "2つのcommentがある場合、それに応じたコメントが記録されること" do
+          it "2つのcommentがある場合、それに応じたコメントが記録されること(records adequate comments if 2 comments were given)" do
             create_with_comment("RETRY_MASK_")
-            @patient.audiograms.last.comment.must_match /再検査\(RETRY\)/
-            @patient.audiograms.last.comment.must_match /マスキング変更\(MASK\)/
+            _(@patient.audiograms.last.comment).must_match /再検査\(RETRY\)/
+            _(@patient.audiograms.last.comment).must_match /マスキング変更\(MASK\)/
             create_with_comment("MED_OTHER:幾つかのコメント_")
-            @patient.audiograms.last.comment.must_match /薬剤投与後\(MED\)/
-            @patient.audiograms.last.comment.must_match /^・幾つかのコメント/
+            _(@patient.audiograms.last.comment).must_match /薬剤投与後\(MED\)/
+            _(@patient.audiograms.last.comment).must_match /^・幾つかのコメント/
           end
         end
 
