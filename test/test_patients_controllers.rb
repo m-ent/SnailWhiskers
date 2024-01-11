@@ -374,8 +374,8 @@ describe 'PatientsController' do
           post "/patients_by_id/#{@valid_hp_id}/create_exam", valid_audio_attributes
           img_loc = "assets/images/#{Audiogram.last.image_location}"
           thumb_loc = img_loc.sub("graphs", "thumbnails")
-          _(File::exists?(img_loc)).must_equal true
-          _(File::exists?(thumb_loc)).must_equal true
+          _(File::exist?(img_loc)).must_equal true
+          _(File::exist?(thumb_loc)).must_equal true
         end
 
         describe "invalid な ID でリクエストした場合(when requested by invalid ID)" do

@@ -57,3 +57,6 @@ build-iPhoneSimulator/
 
 # Ignore Syncthing files
 .syncthing.*
+
+# Ignore Gemfile.lock
+/Gemfile.lock

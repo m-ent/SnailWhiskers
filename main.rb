@@ -266,7 +266,7 @@ class Main < Sinatra::Base
   end
 
   def create_dir_if_not_exist(dir)
-    FileUtils.makedirs(dir) if not File.exists?(dir)
+    FileUtils.makedirs(dir) if not File.exist?(dir)
   end
 
   def convert_to_audiodata(audiogram)
