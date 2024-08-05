@@ -100,7 +100,7 @@ describe 'AudiogramsController' do
       image_root = "assets/images"
       image_dir = "#{app_root}/#{image_root}/#{base_dir}" 
       @image_file = "#{app_root}/#{image_root}/#{@audiogram.image_location}"
-      FileUtils.makedirs(image_dir) if not File.exists?(image_dir)
+      FileUtils.makedirs(image_dir) if not File.exist?(image_dir)
       File::delete(@image_file) if File.exist?(@image_file)
       File::open(@image_file, "w") do |f|
         f.write (@test_str = "test_string")
