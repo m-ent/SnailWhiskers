@@ -343,50 +343,159 @@ describe 'AudiogramsController' do
     end
   end
 
-=begin
-  describe "GET new" do
-    it "assigns a new audiogram as @audiogram" do
-      get :new, {:patient_id => @patient.to_param}, valid_session
-      expect(assigns(:audiogram)).to be_a_new(Audiogram)
+  describe "POST audiograms#direct_create (/audiograms/direct_create)" do
+    # params は params[:hp_id][:datatype][:examdate][:audiometer][:comment][:data]
+    # datatype は今のところ audiogram, impedance, images
+
+    before do
+      @valid_hp_id = 19
+      @invalid_hp_id = 18
+      @examdate = Time.now.strftime("%Y:%m:%d-%H:%M:%S")
+      @audiometer = "audiometer"
+      @datatype = "audiogram"
+#      @comment = "comment" + rand.to_s
+      @random_number = rand.to_s
+      @comment = "OTHER:" + @random_number + "_"
+      @raw_audiosample = "7@/          /  080604  //   0   30 ,  10   35 ,  20   40 ,          ,  30   45 ,          ,  40   50 ,          ,  50   55 ,          ,  60   60 ,          , -10   55 ,  -5   55 ,          ,   0   55 ,          ,   5   55 ,          ,  10   55 ,          ,  15   55 ,  4>  4<,  4>  4<,  4>  4<,        ,  4>  4<,        ,  4>  4<,        ,  4>  4<,        ,  4>  4<,        ,  4>  4<,  4>  4<,        ,  4>  4<,        ,  4>  4<,        ,  4>  4<,        ,  4>  4<,/P"
+      #  125 250 500  1k  2k  4k  8k
+      #R   0  10  20  30  40  50  60
+      #L  30  35  40  45  50  55  60
     end
+
+    describe "datatypeがない場合" do
+      it "HTTP status code 400を返すこと" do
+        post "audiograms/direct_create", {:hp_id => @valid_hp_id, :examdate => @examdate, \
+	                      :equip_name => @audiometer, :comment => @comment, :data => @raw_audiosample}
+        _(last_response.status).must_equal 400
+      end
+    end
+
+    describe "datatypeがaudiogramの場合" do
+      it "正しいパラメータの場合、Audiogramのアイテム数が1増えること" do
+        audiogram_num = Audiogram.all.length
+        post "audiograms/direct_create", {:hp_id => @valid_hp_id, :examdate => @examdate, \
+                      :equip_name => @audiometer, :datatype => @datatype, \
+                      :comment => @comment, :data => @raw_audiosample}
+        _(Audiogram.all.length).must_equal (audiogram_num + 1)
+      end
+
+      it "正しいパラメータの場合、maskingのデータが取得されること" do
+        post "audiograms/direct_create", {:hp_id => @valid_hp_id, :examdate => @examdate, \
+                      :equip_name => @audiometer, :datatype => @datatype, \
+                      :comment => @comment, :data => @raw_audiosample}
+        _(Audiogram.last.comment).must_include "・"+@random_number
+        _(Audiogram.last.mask_ac_rt_125).wont_be_nil
+      end
+
+      it "正しいパラメータの場合、HTTP status code 204を返すこと" do
+        post "audiograms/direct_create", {:hp_id => @valid_hp_id, :examdate => @examdate, \
+                      :equip_name => @audiometer, :datatype => @datatype, \
+                      :comment => @comment, :data => @raw_audiosample}
+        _(last_response.status).must_equal 204
+      end
+
+      it "正しいパラメータの場合、所定の位置にグラフとサムネイルが作られること" do
+        post "audiograms/direct_create", {:hp_id => @valid_hp_id, :examdate => @examdate, \
+                      :equip_name => @audiometer, :datatype => @datatype, \
+                      :comment => @comment, :data => @raw_audiosample}
+        a = Audiogram.last
+        img_loc = "assets/images/#{a.image_location}"
+        thumb_loc = img_loc.sub("graphs", "thumbnails")
+        _(File.exist?(img_loc)).must_equal true
+        _(File.exist?(thumb_loc)).must_equal true
+      end
+
+      it "audiometerの入力がない場合、HTTP status code 400を返すこと" do
+        post "audiograms/direct_create", {:hp_id => @valid_hp_id, :examdate => @examdate, \
+                      :datatype => @datatype, \
+                      :comment => @comment, :data => @raw_audiosample}
+        _(last_response.status).must_equal 400
+      end
+
+      it "dataがない場合、HTTP status code 400を返すこと" do
+        post "audiograms/direct_create", {:hp_id => @valid_hp_id, :examdate => @examdate, \
+                      :equip_name => @audiometer, :datatype => @datatype, \
+                      :comment => @comment}
+        _(last_response.status).must_equal 400
+      end
+
+      it "data形式が不正の場合、HTTP status code 400を返すこと" do
+        post "audiograms/direct_create", {:hp_id => @valid_hp_id, :examdate => @examdate, \
+                      :equip_name => @audiometer, :datatype => @datatype, \
+                      :comment => @comment, :data => "no valid data"}
+        _(last_response.status).must_equal 400
+      end
+
+      it "hp_idが存在しないものの場合、新たにPatientを作成し、Audiogramのアイテム数が1増えること" do
+        if patient_to_delete = Patient.find_by_hp_id(@valid_hp_id)
+          patient_to_delete.destroy
+        end
+        patient_num = Patient.all.length
+        audiogram_num = Audiogram.all.length
+        post "audiograms/direct_create", {:hp_id => @valid_hp_id, :examdate => @examdate, \
+                      :equip_name => @audiometer, :datatype => @datatype, \
+                      :comment => @comment, :data => @raw_audiosample}
+        _(Patient.all.length).must_equal (patient_num + 1)
+        _(Audiogram.all.length).must_equal (audiogram_num + 1)
+      end
+
+      if Id_validation.state
+        it "(以前のsystremでは)不正なhp_idの場合、HTTP status code 400を返すこと" do
+          post "audiograms/direct_create", {:hp_id => @invalid_hp_id, :examdate => @examdate, \
+                        :equip_name => @audiometer, :datatype => @datatype, \
+                        :comment => @comment, :data => @raw_audiosample}
+          _(last_response.status).must_equal 400
+        end
+      else
+        it "(以前のsystremでは)不正なhp_idの場合も、HTTP status code 204を返すこと" do
+          post "audiograms/direct_create", {:hp_id => @invalid_hp_id, :examdate => @examdate, \
+                        :equip_name => @audiometer, :datatype => @datatype, \
+                        :comment => @comment, :data => @raw_audiosample}
+          _(last_response.status).must_equal 204
+        end
+      end
+
+      describe "comment内容による @patient.audiogram.commentの変化について" do
+        before do
+          @patient.hp_id = valid_id?(@patient.hp_id)
+          @patient.save
+        end
+
+        def direct_create_with_comment(com)
+          post "audiograms/direct_create", {:hp_id => @patient.hp_id, :examdate => @examdate, \
+                        :equip_name => @audiometer, :datatype => @datatype, \
+                        :comment => com, :data => @raw_audiosample}
+          @patient.reload
+        end
+
+        it "1つのcommentがある場合、それに応じたコメントが記録されること" do
+          direct_create_with_comment("RETRY_")
+          _(@patient.audiograms.last.comment).must_match(/再検査\(RETRY\)/)
+          direct_create_with_comment("MASK_")
+          _(@patient.audiograms.last.comment).must_match(/マスキング変更\(MASK\)/)
+          direct_create_with_comment("PATCH_")
+          _(@patient.audiograms.last.comment).must_match(/パッチテスト\(PATCH\)/)
+          direct_create_with_comment("MED_")
+          _(@patient.audiograms.last.comment).must_match(/薬剤投与後\(MED\)/)
+          direct_create_with_comment("OTHER:幾つかのコメント_")
+          _(@patient.audiograms.last.comment).must_match(/^・幾つかのコメント/)
+        end
+
+        it "2つのcommentがある場合、それに応じたコメントが記録されること" do
+          direct_create_with_comment("RETRY_MASK_")
+          _(@patient.audiograms.last.comment).must_match(/再検査\(RETRY\)/)
+          _(@patient.audiograms.last.comment).must_match(/マスキング変更\(MASK\)/)
+          direct_create_with_comment("MED_OTHER:幾つかのコメント_")
+          _(@patient.audiograms.last.comment).must_match(/薬剤投与後\(MED\)/)
+          _(@patient.audiograms.last.comment).must_match(/^・幾つかのコメント/)
+        end
+      end
+
+      it "examdateが設定されていない場合..." do
+        skip "どうしたものかまだ思案中"
+      end
+    end
+
   end
-
-  describe "POST create" do
-    describe "with valid params" do
-      it "creates a new Audiogram" do
-        expect {
-          post :create, {:patient_id => @patient.to_param, :audiogram => valid_attributes}, valid_session
-        }.to change(Audiogram, :count).by(1)
-      end
-
-      it "assigns a newly created audiogram as @audiogram" do
-        post :create, {:patient_id => @patient.to_param, :audiogram => valid_attributes}, valid_session
-        expect(assigns(:audiogram)).to be_a(Audiogram)
-        expect(assigns(:audiogram)).to be_persisted
-      end
-
-      it "redirects to the created audiogram" do
-        post :create, {:patient_id => @patient.to_param, :audiogram => valid_attributes}, valid_session
-        expect(response).to redirect_to([@patient, Audiogram.last])
-      end
-    end
-
-    describe "with invalid params" do
-      it "assigns a newly created but unsaved audiogram as @audiogram" do
-        # Trigger the behavior that occurs when invalid params are submitted
-        allow_any_instance_of(Audiogram).to receive(:save).and_return(false)
-        post :create, {:patient_id => @patient.to_param, :audiogram => {}}, valid_session
-        expect(assigns(:audiogram)).to be_a_new(Audiogram)
-      end
-
-      it "re-renders the 'new' template" do
-        # Trigger the behavior that occurs when invalid params are submitted
-        allow_any_instance_of(Audiogram).to receive(:save).and_return(false)
-        post :create, {:patient_id => @patient.to_param, :audiogram => {}}, valid_session
-        expect(response).to render_template("new")
-      end
-    end
-  end
-=end
 
 end

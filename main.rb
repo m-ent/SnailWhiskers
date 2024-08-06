@@ -208,6 +208,39 @@ class Main < Sinatra::Base
     end
   end
 
+  post '/audiograms/direct_create' do #audiograms#direct_input
+    hp_id = valid_id?(params[:hp_id]) || "invalid_id"
+    if not @patient = Patient.find_by_hp_id(hp_id)
+      @patient = Patient.new
+      @patient.hp_id = hp_id
+    end
+
+    if @patient.save
+      case params[:datatype]
+      when "audiogram"
+        @audiogram = @patient.audiograms.create
+        @audiogram.examdate = Time.local *params[:examdate].split(/:|-/)
+        @audiogram.audiometer = params[:equip_name]
+        @audiogram.comment = parse_comment(params[:comment])
+        @audiogram.manual_input = false
+        if params[:data] && set_data(params[:data])
+          build_graph
+          if @audiogram.save
+            204 # No Content # success
+          else
+            [400, 'the audiogram cannot be saved'] # 400 # Bad Request
+          end
+        else
+            [400, 'data error'] # 400 # Bad Request
+        end
+      else
+        [400,'data type not set'] # 400 # Bad Request
+      end
+    else
+      [400, 'the patient cannnot be saved'] # 400 # Bad Request
+    end
+  end
+
 #  get '/patients/:patient_id/audiograms/new' do # audiograms#new
 #  end
 
