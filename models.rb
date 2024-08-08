@@ -17,7 +17,7 @@ end
 
 class Patient < ActiveRecord::Base
   has_many :audiograms
-  validate :hp_id_is_valid
+  #validate :hp_id_is_valid
   validates :hp_id, uniqueness: true
 end
 
