@@ -5,10 +5,11 @@ source "https://rubygems.org"
 gem "sinatra"
 gem "sinatra-contrib"
 gem "sinatra-activerecord"
-gem "sqlite3"
+gem "sqlite3", "~> 1.4"
 gem "rake"
 gem "chunky_png", ">=1.2.8"
-#gem "thin"
+gem "thin"
+gem "rackup"
 
 group :test, :development do
   gem 'rack-test'
