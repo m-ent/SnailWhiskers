@@ -160,7 +160,7 @@ describe 'PatientsController' do
       end
 
       after do
-        @id_validation_tmp ? Id_validation::enable : Id_validation::disable
+        @id_validation_tmp ? Id_validation::enable : Id_validation::disable # validation 設定復帰
       end
 
       it "patients の 数が増えないこと(do not increase the number of patients)" do
@@ -211,6 +211,12 @@ describe 'PatientsController' do
     before do
       Patient.delete_all
       @patient = Patient.create! valid_attributes
+      @id_validation_tmp = Id_validation::state
+      Id_validation::enable  # 設定によらず強制的に validation を有効にしておく
+    end
+
+    after do
+      @id_validation_tmp ? Id_validation::enable : Id_validation::disable # validation 設定復帰
     end
 
     describe "valid params を入力した場合(when params are valid:" do

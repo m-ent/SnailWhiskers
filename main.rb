@@ -5,6 +5,7 @@ require 'sinatra/activerecord'
 require './models'
 require './helpers'
 require './lib/audio_class'
+require './lib/id_validation'
 
 class Main < Sinatra::Base
   register Sinatra::ActiveRecordExtension
