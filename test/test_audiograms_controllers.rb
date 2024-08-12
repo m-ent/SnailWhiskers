@@ -17,7 +17,7 @@ describe 'AudiogramsController' do
 
   # return the minimal set of attributes required to create a valid Audiogram
   def valid_attributes
-    {examdate: Time.now, audiometer: 'audiometer'}
+    {examdate: Time.now, image_location: "graphs_some_directory", audiometer: 'audiometer'}
   end
 
   def valid_session
@@ -28,7 +28,7 @@ describe 'AudiogramsController' do
     before do
       audiogram = Audiogram.create!(
         examdate: Time.now, comment: "Comment",
-	image_location: "graphs_some_directory",
+        image_location: "graphs_some_directory",
         ac_rt_500: 10, ac_rt_1k: 20, ac_rt_2k: 30,
         ac_lt_500: 15, ac_lt_1k: 25, ac_lt_2k: 35,
         audiometer: "Audiometer", hospital: "Hospital"
@@ -58,7 +58,7 @@ describe 'AudiogramsController' do
       _(@response.body).must_match /1 audiogram[^s]/
       audiogram2 = Audiogram.create!(
         examdate: Time.now, comment: "Comment",
-	image_location: "graphs_some_directory",
+        image_location: "graphs_some_directory",
         ac_rt_500: 10, ac_rt_1k: 20, ac_rt_2k: 30,
         ac_lt_500: 15, ac_lt_1k: 25, ac_lt_2k: 35,
         audiometer: "Audiometer", hospital: "Hospital"

@@ -23,6 +23,7 @@ class Main < Sinatra::Base
     register Sinatra::Reloader
   end
   enable :method_override
+  set :public_folder, File.dirname(__FILE__) + '/assets/images'
 
   Image_root = "assets/images"
   Thumbnail_size = "160x160"

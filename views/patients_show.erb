@@ -21,7 +21,7 @@
     <tr>
       <% recent.each do |a| %>
         <td><%= "<a href=#{url "/patients/#{@patient.id}/audiograms/#{a.id}"}>" %>
-        <%= "<img src=#{"\"" + a.image_location.sub("graphs", "thumbnails") + "\""}>" %>
+        <%= "<img src=#{"\"\/" + a.image_location.sub("graphs", "thumbnails") + "\""}>" %>
         </a>
         </td>
       <% end %>

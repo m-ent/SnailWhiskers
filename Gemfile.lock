@@ -98,6 +98,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  activerecord (~> 7.1.2)
   chunky_png (>= 1.2.8)
   factory_bot
   minitest

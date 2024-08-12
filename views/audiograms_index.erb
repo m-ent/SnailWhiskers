@@ -23,7 +23,9 @@
     <td><%#= check_box_tag "selected[]", audiogram.id %><br><a href="#search" %>▼</a></td>
     <td><%= audiogram.examdate.strftime("%Y/%m/%d") %><br><%= audiogram.examdate.strftime("%X") %></td>
     <td><%= "<a href=#{url "/patients/#{@patient.id}/audiograms/#{audiogram.id}"}>" %>
-      <%= image_tag(audiogram.image_location.sub("graphs", "thumbnails")) %></a></td>
+        <%= "<img src=#{"\"\/" + audiogram.image_location.sub("graphs", "thumbnails") + "\""}>" %></a>
+    </td>
+
     <td>R: <%= mean("4R", audiogram)[:R] %><br>L: <%= mean("4R", audiogram)[:L] %></td>
       <!-- helper method is put at app/helpers/audiograms_helper.rb -->
     <td><%= audiogram.comment %></td>
