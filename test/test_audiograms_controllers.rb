@@ -399,7 +399,7 @@ describe 'AudiogramsController' do
                       :equip_name => @audiometer, :datatype => @datatype, \
                       :comment => @comment, :data => @raw_audiosample}
         a = Audiogram.last
-        img_loc = "assets/images/#{a.image_location}"
+        img_loc = "assets/#{a.image_location}"
         thumb_loc = img_loc.sub("graphs", "thumbnails")
         _(File.exist?(img_loc)).must_equal true
         _(File.exist?(thumb_loc)).must_equal true

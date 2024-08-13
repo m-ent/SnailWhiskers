@@ -23,9 +23,9 @@ class Main < Sinatra::Base
     register Sinatra::Reloader
   end
   enable :method_override
-  set :public_folder, File.dirname(__FILE__) + '/assets/images'
+  set :public_folder, File.dirname(__FILE__) + '/assets'
 
-  Image_root = "assets/images"
+  Image_root = "assets"
   Thumbnail_size = "160x160"
 
   helpers do
@@ -260,12 +260,12 @@ class Main < Sinatra::Base
 
   def build_graph
     exam_year = @audiogram.examdate.strftime("%Y")
-    base_dir = "#{ENV['RACK_ENV']}/graphs/#{exam_year}"
+    base_dir = "images/#{ENV['RACK_ENV']}/graphs/#{exam_year}"
     @audiogram.image_location = make_filename(base_dir, \
                                 @audiogram.examdate.getlocal.strftime("%Y%m%d-%H%M%S"))
     @audiogram.save
     thumbnail_location = @audiogram.image_location.sub("graphs", "thumbnails")
-    image_root_env = "#{Image_root}/#{ENV['RACK_ENV']}"
+    image_root_env = "#{Image_root}/images/#{ENV['RACK_ENV']}"
     create_dir_if_not_exist("#{image_root_env}/graphs/#{exam_year}")
     create_dir_if_not_exist("#{image_root_env}/thumbnails/#{exam_year}")
 

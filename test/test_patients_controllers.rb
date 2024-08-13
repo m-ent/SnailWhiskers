@@ -378,7 +378,7 @@ describe 'PatientsController' do
 
         it "正しいパラメータの場合、所定の位置にグラフとサムネイルが作られること(create a graph and its thumbnail in appropriate location if params are regular)" do
           post "/patients_by_id/#{@valid_hp_id}/create_exam", valid_audio_attributes
-          img_loc = "assets/images/#{Audiogram.last.image_location}"
+          img_loc = "assets/#{Audiogram.last.image_location}"
           thumb_loc = img_loc.sub("graphs", "thumbnails")
           _(File::exist?(img_loc)).must_equal true
           _(File::exist?(thumb_loc)).must_equal true
