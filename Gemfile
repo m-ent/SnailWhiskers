@@ -9,6 +9,7 @@ gem "sinatra-activerecord"
 gem "sqlite3", "~> 1.4"
 gem "rake"
 gem "chunky_png", ">=1.2.8"
+gem "cairo"
 gem "thin"
 gem "rackup"
 
