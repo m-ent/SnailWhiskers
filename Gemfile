@@ -10,7 +10,7 @@ gem "sqlite3", "~> 1.4"
 gem "rake"
 gem "chunky_png", ">=1.2.8"
 gem "cairo"
-gem "thin"
+gem "puma"
 gem "rackup"
 
 group :test, :development do
