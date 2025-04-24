@@ -55,7 +55,7 @@ describe 'AudiogramsController' do
     end
 
     it 'audiogram の数に応じて単数複数が表示されること(can use pluralization)' do
-      _(@response.body).must_match /1 audiogram[^s]/
+      _(@response.body).must_match(/1 audiogram[^s]/)
       audiogram2 = Audiogram.create!(
         examdate: Time.now, comment: "Comment",
         image_location: "graphs_some_directory",
@@ -129,7 +129,7 @@ describe 'AudiogramsController' do
     end
 
     it '印刷ボタンが表示されること(can show a [print] button' do
-      _(@response.body).must_match /<input type.+button.+onclick.+print()/
+      _(@response.body).must_match(/<input type.+button.+onclick.+print()/)
     end
 
     it 'audiogram 一覧 (audiograms#index) への link があること(has a link to audiograms#index)' do
@@ -360,6 +360,14 @@ describe 'AudiogramsController' do
       #  125 250 500  1k  2k  4k  8k
       #R   0  10  20  30  40  50  60
       #L  30  35  40  45  50  55  60
+    end
+
+    describe "audiogramの描画に関して" do
+      it "必要なfontがインストールされていること" do
+        if `uname`.match(/FreeBSD/)
+          _(`pkg info |grep IPA`).must_match(/IPAex/)
+        end
+      end
     end
 
     describe "datatypeがない場合" do

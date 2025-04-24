@@ -18,7 +18,7 @@ end
 
 # railsの場合，directoryの相対表示の起点は rails/audiserv であるようだ
 Overdraw_times = 2  # 重ね書きの回数．まずは2回，つまり1回前の検査までとする
-Graph_size = 800 # size at start-development is 400px
+Graph_size = 600 # size at start-development is 400px
 
 def draw_rate(x)
   if x.class == Integer
