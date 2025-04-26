@@ -36,6 +36,10 @@ class Main < Sinatra::Base
     'Welcome abord'
   end
 
+  get '/controlpanel' do
+    erb :controlpanel
+  end
+
   get '/patients' do # patients#index
     @patients = Patient.all
     erb :patients_index
@@ -241,6 +245,20 @@ class Main < Sinatra::Base
     else
       [400, 'the patient cannnot be saved'] # 400 # Bad Request
     end
+  end
+
+  get '/audiograms/all_rebuild' do #audiograms#all_rebuild
+    audiograms = Audiogram.all
+    audiograms.each do |a|
+      @audiogram = a
+      build_graph
+      if @audiogram.save
+        204 # No Content # success
+      else
+        [400, 'the audiogram cannot be saved'] # 400 # Bad Request
+      end
+    end
+    redirect to("/controlpanel")
   end
 
 #  get '/patients/:patient_id/audiograms/new' do # audiograms#new

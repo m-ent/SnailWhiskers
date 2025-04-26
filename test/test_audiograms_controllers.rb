@@ -506,4 +506,48 @@ describe 'AudiogramsController' do
 
   end
 
+  describe "GET audiograms#all_rebuild (/audiograms/all_rebuild)" do
+    # params は params[:hp_id][:datatype][:examdate][:audiometer][:comment][:data]
+    # datatype は今のところ audiogram, impedance, images
+
+    before do
+      Patient.destroy_all
+      Audiogram.destroy_all
+      @valid_hp_id1 = 19
+      @valid_hp_id2 = 27
+      @examdate1 = Time.now.strftime("%Y:%m:%d-%H:%M:%S")
+      @examdate2 = (Time.now + 5 * 24 * 3600).strftime("%Y:%m:%d-%H:%M:%S")
+      @audiometer = "audiometer"
+      @datatype = "audiogram"
+      @random_number = rand.to_s
+      @comment = "OTHER:" + @random_number + "_"
+      @raw_audiosample1 = "7@/          /  080604  //   0   30 ,  10   35 ,  20   40 ,          ,  30   45 ,          ,  40   50 ,          ,  50   55 ,          ,  60   60 ,          , -10   55 ,  -5   55 ,          ,   0   55 ,          ,   5   55 ,          ,  10   55 ,          ,  15   55 ,  4>  4<,  4>  4<,  4>  4<,        ,  4>  4<,        ,  4>  4<,        ,  4>  4<,        ,  4>  4<,        ,  4>  4<,  4>  4<,        ,  4>  4<,        ,  4>  4<,        ,  4>  4<,        ,  4>  4<,/P"
+      #  125 250 500  1k  2k  4k  8k
+      #R   0  10  20  30  40  50  60
+      #L  30  35  40  45  50  55  60
+      @raw_audiosample2 = "7@/          /  080604  //   0   30 ,  10   35 ,  20   40 ,          ,  30   45 ,          ,  20   50 ,          ,  10   55 ,          ,  10   60 ,          , -10   55 ,  -5   55 ,          ,   0   55 ,          ,   5   55 ,          ,  10   55 ,          ,  15   55 ,  4>  4<,  4>  4<,  4>  4<,        ,  4>  4<,        ,  4>  4<,        ,  4>  4<,        ,  4>  4<,        ,  4>  4<,  4>  4<,        ,  4>  4<,        ,  4>  4<,        ,  4>  4<,        ,  4>  4<,/U"
+      #  125 250 500  1k  2k  4k  8k
+      #R   0  10  20  30  20  10  10
+      #L  30  35  40  45  50  55  60
+      post "audiograms/direct_create", {:hp_id => @valid_hp_id1, :examdate => @examdate1, \
+                    :equip_name => @audiometer, :datatype => @datatype, \
+                    :comment => @comment, :data => @raw_audiosample1}
+      post "audiograms/direct_create", {:hp_id => @valid_hp_id2, :examdate => @examdate2, \
+                    :equip_name => @audiometer, :datatype => @datatype, \
+                    :comment => @comment, :data => @raw_audiosample2}
+    end
+
+    it "元々存在する audiogram のグラフを消しても all_rebuild で同じものが再作成できること" do
+      _(Audiogram.all.length).must_equal 2
+      @md5_1 = Digest::MD5.file("./assets/#{Audiogram.first.image_location}")
+      @md5_2 = Digest::MD5.file("./assets/#{Audiogram.last.image_location}")
+      File.delete  "./assets/#{Audiogram.first.image_location}"
+      File.delete  "./assets/#{Audiogram.last.image_location}"
+      get "audiograms/all_rebuild"
+      _(Audiogram.all.length).must_equal 2
+      _(Digest::MD5.file("./assets/#{Audiogram.first.image_location}")).must_equal @md5_1
+      _(Digest::MD5.file("./assets/#{Audiogram.last.image_location}")).must_equal @md5_2
+    end
+
+  end
 end
