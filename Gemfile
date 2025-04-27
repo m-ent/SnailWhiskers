@@ -12,6 +12,7 @@ gem "chunky_png", ">=1.2.8"
 gem "cairo"
 gem "puma"
 gem "rackup"
+gem "rack-flash3" # flash の有効化
 
 group :test, :development do
   gem 'rack-test'

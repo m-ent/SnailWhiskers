@@ -1,6 +1,7 @@
 require 'sinatra/base'
 require 'sinatra/reloader'
 require 'sinatra/activerecord'
+require 'rack-flash'
 
 require './models'
 require './helpers'
@@ -24,6 +25,8 @@ class Main < Sinatra::Base
   end
   enable :method_override
   set :public_folder, File.dirname(__FILE__) + '/assets'
+  enable :sessions
+  use Rack::Flash
 
   Image_root = "assets"
   Thumbnail_size = "160x160"
@@ -248,6 +251,7 @@ class Main < Sinatra::Base
   end
 
   get '/audiograms/all_rebuild' do #audiograms#all_rebuild
+    protected!
     audiograms = Audiogram.all
     audiograms.each do |a|
       @audiogram = a
@@ -258,6 +262,7 @@ class Main < Sinatra::Base
         [400, 'the audiogram cannot be saved'] # 400 # Bad Request
       end
     end
+    flash[:notice] = "Rebuild success!"
     redirect to("/controlpanel")
   end
 

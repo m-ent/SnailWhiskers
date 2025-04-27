@@ -282,7 +282,7 @@ describe 'AudiogramsController' do
       end
     end
 
-    describe "basic認証をpassする場合(when basic-auth passed" do
+    describe "basic認証をpassする場合(when basic-auth passed)" do
       before do
         basic_authorize @right_user, @right_pw
       end
@@ -537,17 +537,45 @@ describe 'AudiogramsController' do
                     :comment => @comment, :data => @raw_audiosample2}
     end
 
-    it "元々存在する audiogram のグラフを消しても all_rebuild で同じものが再作成できること" do
-      _(Audiogram.all.length).must_equal 2
-      @md5_1 = Digest::MD5.file("./assets/#{Audiogram.first.image_location}")
-      @md5_2 = Digest::MD5.file("./assets/#{Audiogram.last.image_location}")
-      File.delete  "./assets/#{Audiogram.first.image_location}"
-      File.delete  "./assets/#{Audiogram.last.image_location}"
-      get "audiograms/all_rebuild"
-      _(Audiogram.all.length).must_equal 2
-      _(Digest::MD5.file("./assets/#{Audiogram.first.image_location}")).must_equal @md5_1
-      _(Digest::MD5.file("./assets/#{Audiogram.last.image_location}")).must_equal @md5_2
+    describe "basic認証をpassしない場合(when basic-auth didn't pass)" do
+      before do
+        basic_authorize @right_user, @wrong_pw
+        File.delete  "./assets/#{Audiogram.first.image_location}"
+        File.delete  "./assets/#{Audiogram.last.image_location}"
+        get "audiograms/all_rebuild"
+      end
+
+      it "グラフが再描画されないこと(doesn't redraw audiogram)" do
+        _(File.exist?("./assets/#{Audiogram.first.image_location}")).must_equal false
+        _(File.exist?("./assets/#{Audiogram.last.image_location}")).must_equal false
+      end
+
+      it "401 status code [Unauthorized] が帰ってくること(returns 401[Unauthorized]" do
+        _(last_response.status).must_equal 401
+      end
     end
 
+    describe "basic認証をpassする場合(when basic-auth passed)" do
+      before do
+        basic_authorize @right_user, @right_pw
+        @md5_1 = Digest::MD5.file("./assets/#{Audiogram.first.image_location}")
+        @md5_2 = Digest::MD5.file("./assets/#{Audiogram.last.image_location}")
+        File.delete  "./assets/#{Audiogram.first.image_location}"
+        File.delete  "./assets/#{Audiogram.last.image_location}"
+        get "audiograms/all_rebuild"
+        follow_redirect!
+      end
+
+      it "元々存在する audiogram のグラフを消しても all_rebuild で同じものが再作成できること(rebuilds the audiograms)" do
+        #_(Audiogram.all.length).must_equal 2
+        _(Audiogram.all.length).must_equal 2
+        _(Digest::MD5.file("./assets/#{Audiogram.first.image_location}")).must_equal @md5_1
+        _(Digest::MD5.file("./assets/#{Audiogram.last.image_location}")).must_equal @md5_2
+      end
+
+      it "flash で再作成に成功した旨を表示すること(tells a successful result by flash)" do
+        _(last_response.body).must_include "Rebuild success"
+      end
+    end
   end
 end

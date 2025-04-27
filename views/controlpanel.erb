@@ -1,9 +1,19 @@
 <%= "<!-- /dashboard -->" %>
+
+<% if flash[:notice] %>
+  <%= flash[:notice] %>
+<% end %>
+
 <h1>Dashboard</h1>
 
 <h2>Rebuild all audiograms</h2>
 <form method="get" action="/audiograms/all_rebuild">
   <input type="submit" value="All Rebuild!" onclick="return confirm('Are you sure to rebuild all audiograms?');">
+</form>
+
+<h2>Manual input of an audiogram</h2>
+<form method="get" action="/audiograms/manual_create">
+  <input type="submit" value="Manual Input">
 </form>
 
 
