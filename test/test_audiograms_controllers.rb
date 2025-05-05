@@ -578,4 +578,105 @@ describe 'AudiogramsController' do
       end
     end
   end
+
+  describe "GET audiograms#new (/audiogams/new)" do
+    it "hp_id の入力を持ち、post /audiograms/manual_create へ遷移する form を持つこと\
+        (has an input field for hp_id, and a form migrating to \'post /audiograms/manual_create\')" do
+      get "/audiograms/new"
+      _(last_response.body).must_include "<!-- /audiograms/new -->"
+      _(last_response.body).must_match(/form action='\/audiograms\/manual_create' method='POST'/)
+      _(last_response.body).must_match(/input type='text' name='hp_id'/)
+    end
+  end
+
+  describe "POST audiograms#manual_create (/audiogams/manual_create)" do
+    before do
+      Patient.destroy_all
+      Audiogram.destroy_all
+      @valid_hp_id = 19
+      @examdate = [2025, 1, 1, 10, 30] # 2025/1/1 10:30
+      @audiometer = "audiometer"
+      @datatype = "audiogram"
+      @random_number = rand.to_s
+      @comment = "OTHER:" + @random_number + "_"
+      @ra = [ 0, 10, 20, 30, 40, 50, 60]
+      @la = [30, 35, 40, 45, 50, 55, 60]
+      @post_data = {:hp_id => @valid_hp_id, \
+                    :year => @examdate[0], :month => @examdate[1], :day => @examdate[2], \
+                    :hh => @examdate[3], :mm => @examdate[4], \
+                    :equip_name => @audiometer, :datatype => @datatype, :comment => @comment, \
+                    :ra_125 => @ra[0], :ra_250 => @ra[1], :ra_500 => @ra[2], :ra_1k => @ra[3], \
+                    :ra_2k => @ra[4], :ra_4k => @ra[5], :ra_8k => @ra[6], \
+                    :ram_125 => nil, :ram_250 => nil, :ram_500 => nil, :ram_1k => nil, \
+                    :ram_2k => nil, :ram_4k => nil, :ram_8k => nil, \
+                    :la_125 => @la[0], :la_250 => @la[1], :la_500 => @la[2], :la_1k => @la[3], \
+                    :la_2k => @la[4], :la_4k => @la[5], :la_8k => @la[6], \
+                    :lam_125 => nil, :lam_250 => nil, :lam_500 => nil, :lam_1k => nil, \
+                    :lam_2k => nil, :lam_4k => nil, :lam_8k => nil, \
+                    :rb_125 => nil, :rb_250 => nil, :rb_500 => nil, :rb_1k => nil, \
+                    :rb_2k => nil, :rb_4k => nil, :rb_8k => nil, \
+                    :rbm_125 => nil, :rbm_250 => nil, :rbm_500 => nil, :rbm_1k => nil, \
+                    :rbm_2k => nil, :rbm_4k => nil, :rbm_8k => nil, \
+                    :lb_125 => nil, :lb_250 => nil, :lb_500 => nil, :lb_1k => nil, \
+                    :lb_2k => nil, :lb_4k => nil, :lb_8k => nil, \
+                    :lbm_125 => nil , :lbm_250 => nil, :lbm_500 => nil, :lbm_1k => nil, \
+                    :lbm_2k => nil, :lbm_4k => nil, :lbm_8k => nil}
+    end
+
+    it "正しいデータをPOSTした時に Patients と Audiograms がそれぞれ 1増えること" do
+      post "/audiograms/manual_create", @post_data
+      _(Patient.all.length).must_equal 1
+      _(Audiogram.all.length).must_equal 1
+    end
+
+    it "聴力データが全くない場合は Patients と Audiograms が変化しないこと" do
+      post_data = @post_data
+      post_data[:ra_125] = nil
+      post_data[:ra_250] = nil
+      post_data[:ra_500] = nil
+      post_data[:ra_1k] = nil
+      post_data[:ra_2k] = nil
+      post_data[:ra_4k] = nil
+      post_data[:ra_8k] = nil
+      post_data[:la_125] = nil
+      post_data[:la_250] = nil
+      post_data[:la_500] = nil
+      post_data[:la_1k] = nil
+      post_data[:la_2k] = nil
+      post_data[:la_4k] = nil
+      post_data[:la_8k] = nil
+      post "/audiograms/manual_create", post_data
+      _(Patient.all.length).must_equal 0
+      _(Audiogram.all.length).must_equal 0
+    end
+
+    it "検査日付に不備があった場合、Patients と Audiograms が変化しないこと" do
+      post_data = @post_data
+      post_data[:year] = nil
+      post "/audiograms/manual_create", post_data
+      _(Patient.all.length).must_equal 0
+      _(Audiogram.all.length).must_equal 0
+      post_data = @post_data
+      post_data[:month] = nil
+      post "/audiograms/manual_create", post_data
+      _(Patient.all.length).must_equal 0
+      _(Audiogram.all.length).must_equal 0
+      post_data = @post_data
+      post_data[:day] = nil
+      post "/audiograms/manual_create", post_data
+      _(Patient.all.length).must_equal 0
+      _(Audiogram.all.length).must_equal 0
+    end
+
+    it "POST項目が全て揃っていない場合でも、Patients と Audiograms がそれぞれ 1増えること" do
+      post_data = {:hp_id => @valid_hp_id, \
+                   :year => @examdate[0], :month => @examdate[1], :day => @examdate[2], \
+                   :hh => @examdate[3], :mm => @examdate[4], \
+                   :equip_name => @audiometer, :datatype => @datatype, :comment => @comment, \
+                   :ra_1k => @ra[3], :ra_4k => @ra[5], :la_1k => @la[3], :la_4k => @la[5]}
+      post "/audiograms/manual_create", post_data
+      _(Patient.all.length).must_equal 1
+      _(Audiogram.all.length).must_equal 1
+    end
+  end
 end

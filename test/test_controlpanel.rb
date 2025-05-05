@@ -12,8 +12,8 @@ describe "GET controlpanel (/controlpanel) : view" do
     _(@response.body).must_include "audiograms/all_rebuild"
   end
 
-  it "audiograms/manual_create への link が含まれること(has a link to audiograms#manual_create)" do
-    _(@response.body).must_include "audiograms/manual_create"
+  it "audiograms/new への link が含まれること(has a link to audiograms#new)" do
+    _(@response.body).must_include "audiograms/new"
   end
 end
 

@@ -121,8 +121,8 @@ describe 'PatientsController' do
     it "hp_id の入力を持ち、post /patients へ遷移する form を持つこと(has an input field for hp_id, and a form migrating to \'post /patients\')" do
       get "/patients/new"
       _(last_response.body).must_include "<!-- /patients/new -->"
-      _(last_response.body).must_match /form action='\/patients' method='POST'/
-      _(last_response.body).must_match /input type='text' name='hp_id'/
+      _(last_response.body).must_match(/form action='\/patients' method='POST'/)
+      _(last_response.body).must_match(/input type='text' name='hp_id'/)
     end
   end
 
@@ -450,24 +450,24 @@ describe 'PatientsController' do
 
           it "1つのcommentがある場合、それに応じたコメントが記録されること(records an adequate comment if one comment was given)" do
             create_with_comment("RETRY_")
-            _(@patient.audiograms.last.comment).must_match /再検査\(RETRY\)/
+            _(@patient.audiograms.last.comment).must_match(/再検査\(RETRY\)/)
             create_with_comment("MASK_")
-            _(@patient.audiograms.last.comment).must_match /マスキング変更\(MASK\)/
+            _(@patient.audiograms.last.comment).must_match(/マスキング変更\(MASK\)/)
             create_with_comment("PATCH_")
-            _(@patient.audiograms.last.comment).must_match /パッチテスト\(PATCH\)/
+            _(@patient.audiograms.last.comment).must_match(/パッチテスト\(PATCH\)/)
             create_with_comment("MED_")
-            _(@patient.audiograms.last.comment).must_match /薬剤投与後\(MED\)/
+            _(@patient.audiograms.last.comment).must_match(/薬剤投与後\(MED\)/)
             create_with_comment("OTHER:幾つかのコメント_")
-            _(@patient.audiograms.last.comment).must_match /^・幾つかのコメント/
+            _(@patient.audiograms.last.comment).must_match(/^・幾つかのコメント/)
           end
 
           it "2つのcommentがある場合、それに応じたコメントが記録されること(records adequate comments if 2 comments were given)" do
             create_with_comment("RETRY_MASK_")
-            _(@patient.audiograms.last.comment).must_match /再検査\(RETRY\)/
-            _(@patient.audiograms.last.comment).must_match /マスキング変更\(MASK\)/
+            _(@patient.audiograms.last.comment).must_match(/再検査\(RETRY\)/)
+            _(@patient.audiograms.last.comment).must_match(/マスキング変更\(MASK\)/)
             create_with_comment("MED_OTHER:幾つかのコメント_")
-            _(@patient.audiograms.last.comment).must_match /薬剤投与後\(MED\)/
-            _(@patient.audiograms.last.comment).must_match /^・幾つかのコメント/
+            _(@patient.audiograms.last.comment).must_match(/薬剤投与後\(MED\)/)
+            _(@patient.audiograms.last.comment).must_match(/^・幾つかのコメント/)
           end
         end
 

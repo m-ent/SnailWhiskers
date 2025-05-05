@@ -1,0 +1,126 @@
+<!-- /audiograms/new -->
+<link rel="stylesheet" type="text/css" href="/css/patients.css" >
+<style>
+  input.wide {width: 8em;}
+  input.narrow {width: 3em;}
+</style>
+<h1>New Audiogram (manual create)</h1>
+
+<form action='/audiograms/manual_create' method='POST'>
+  <p>
+  ID: <input type='text' name='hp_id' value="" class="wide">
+  </p>
+
+  <p>
+  date/time: 
+    <input type='text' name='year' value="" class ="narrow">年
+    <input type='text' name='month' value="" class ="narrow">月
+    <input type='text' name='day' value="" class ="narrow">日 
+    ( <input type='text' name='hh' value="" class ="narrow"> :
+    <input type='text' name='mm' value="" class ="narrow"> )
+  </p>
+
+
+  <p>
+  Audiogram<br>
+  <table border="1">
+    <tr>
+      <th>side</th>
+      <th>125Hz</th>
+      <th>250Hz</th>
+      <th>500Hz</th>
+      <th>1kHz</th>
+      <th>2kHz</th>
+      <th>4kHz</th>
+      <th>8kHz</th>
+    </tr>
+    <tr>
+      <td>R-Air</td>
+      <td><input type='text' name='ra_125' value="" class="narrow"></td>
+      <td><input type='text' name='ra_250' value="" class="narrow"></td>
+      <td><input type='text' name='ra_500' value="" class="narrow"></td>
+      <td><input type='text' name='ra_1k' value="" class="narrow"></td>
+      <td><input type='text' name='ra_2k' value="" class="narrow"></td>
+      <td><input type='text' name='ra_4k' value="" class="narrow"></td>
+      <td><input type='text' name='ra_8k' value="" class="narrow"></td>
+    </tr>
+    <tr>
+      <td>R-Air-mask</td>
+      <td><input type='text' name='ra_mask_125' value="" class="narrow"></td>
+      <td><input type='text' name='ra_mask_250' value="" class="narrow"></td>
+      <td><input type='text' name='ra_mask_500' value="" class="narrow"></td>
+      <td><input type='text' name='ra_mask_1k' value="" class="narrow"></td>
+      <td><input type='text' name='ra_mask_2k' value="" class="narrow"></td>
+      <td><input type='text' name='ra_mask_4k' value="" class="narrow"></td>
+      <td><input type='text' name='ra_mask_8k' value="" class="narrow"></td>
+    </tr>
+    <tr>
+      <td>L-Air</td>
+      <td><input type='text' name='la_125' value="" class="narrow"></td>
+      <td><input type='text' name='la_250' value="" class="narrow"></td>
+      <td><input type='text' name='la_500' value="" class="narrow"></td>
+      <td><input type='text' name='la_1k' value="" class="narrow"></td>
+      <td><input type='text' name='la_2k' value="" class="narrow"></td>
+      <td><input type='text' name='la_4k' value="" class="narrow"></td>
+      <td><input type='text' name='la_8k' value="" class="narrow"></td>
+    </tr>
+    <tr>
+      <td>L-Air-mask</td>
+      <td><input type='text' name='la_mask_125' value="" class="narrow"></td>
+      <td><input type='text' name='la_mask_250' value="" class="narrow"></td>
+      <td><input type='text' name='la_mask_500' value="" class="narrow"></td>
+      <td><input type='text' name='la_mask_1k' value="" class="narrow"></td>
+      <td><input type='text' name='la_mask_2k' value="" class="narrow"></td>
+      <td><input type='text' name='la_mask_4k' value="" class="narrow"></td>
+      <td><input type='text' name='la_mask_8k' value="" class="narrow"></td>
+    </tr>
+    <tr>
+      <td>R-Bone</td>
+      <td><input type='text' name='rb_125' value="" class="narrow"></td>
+      <td><input type='text' name='rb_250' value="" class="narrow"></td>
+      <td><input type='text' name='rb_500' value="" class="narrow"></td>
+      <td><input type='text' name='rb_1k' value="" class="narrow"></td>
+      <td><input type='text' name='rb_2k' value="" class="narrow"></td>
+      <td><input type='text' name='rb_4k' value="" class="narrow"></td>
+      <td><input type='text' name='rb_8k' value="" class="narrow"></td>
+    </tr>
+    <tr>
+      <td>R-Bone-mask</td>
+      <td><input type='text' name='rb_mask_125' value="" class="narrow"></td>
+      <td><input type='text' name='rb_mask_250' value="" class="narrow"></td>
+      <td><input type='text' name='rb_mask_500' value="" class="narrow"></td>
+      <td><input type='text' name='rb_mask_1k' value="" class="narrow"></td>
+      <td><input type='text' name='rb_mask_2k' value="" class="narrow"></td>
+      <td><input type='text' name='rb_mask_4k' value="" class="narrow"></td>
+      <td><input type='text' name='rb_mask_8k' value="" class="narrow"></td>
+    </tr>
+    <tr>
+      <td>L-Bone</td>
+      <td><input type='text' name='lb_125' value="" class="narrow"></td>
+      <td><input type='text' name='lb_250' value="" class="narrow"></td>
+      <td><input type='text' name='lb_500' value="" class="narrow"></td>
+      <td><input type='text' name='lb_1k' value="" class="narrow"></td>
+      <td><input type='text' name='lb_2k' value="" class="narrow"></td>
+      <td><input type='text' name='lb_4k' value="" class="narrow"></td>
+      <td><input type='text' name='lb_8k' value="" class="narrow"></td>
+    </tr>
+    <tr>
+      <td>L-Bone-mask</td>
+      <td><input type='text' name='lb_mask_125' value="" class="narrow"></td>
+      <td><input type='text' name='lb_mask_250' value="" class="narrow"></td>
+      <td><input type='text' name='lb_mask_500' value="" class="narrow"></td>
+      <td><input type='text' name='lb_mask_1k' value="" class="narrow"></td>
+      <td><input type='text' name='lb_mask_2k' value="" class="narrow"></td>
+      <td><input type='text' name='lb_mask_4k' value="" class="narrow"></td>
+      <td><input type='text' name='lb_mask_8k' value="" class="narrow"></td>
+    </tr>
+  </table>
+  </p>
+  Scale outは数字の後に "_" をつける("100_"など)<br>
+  masking(50dBの場合): band noise => "b50", white noise => "w50"
+
+  <p>
+  <input type='submit' value="Save Audiogram">
+  </p>
+</form>
+  
