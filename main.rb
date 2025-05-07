@@ -86,9 +86,13 @@ class Main < Sinatra::Base
     redirect to("/patients")
   end
 
+  get '/patient/by_hp_id/:hp_id/' do # patients_by_id_create_exam
+    redirect to ("/patients_by_id/#{parans[:hp_id]}")
+  end
+
   get '/patients_by_id/:hp_id' do # patients_by_id
-    if valid_id?(params[:hp_id]) 
-      @patient = Patient.where(hp_id: params[:hp_id]).take
+    if (val_id = valid_id?(params[:hp_id])) 
+      @patient = Patient.where(hp_id: val_id).take
       if @patient
         redirect to("/patients/#{@patient.id}")
       else
@@ -272,14 +276,14 @@ class Main < Sinatra::Base
 
   post '/audiograms/manual_create' do
     hp_id = valid_id?(params[:hp_id]) || "invalid_id"
-    ra = [params[:ra_125], params[:ra_250], params[:ra_1k], params[:ra_2k], params[:ra_4k], params[:ra_8k]]
-    la = [params[:la_125], params[:la_250], params[:la_1k], params[:la_2k], params[:la_4k], params[:la_8k]]
-    ram = [params[:ram_125], params[:ram_250], params[:ram_1k], params[:ram_2k], params[:ram_4k], params[:ram_8k]]
-    lam = [params[:lam_125], params[:lam_250], params[:lam_1k], params[:lam_2k], params[:lam_4k], params[:lam_8k]]
-    rb = [params[:rb_125], params[:rb_250], params[:rb_1k], params[:rb_2k], params[:rb_4k], params[:rb_8k]]
-    lb = [params[:lb_125], params[:lb_250], params[:lb_1k], params[:lb_2k], params[:lb_4k], params[:lb_8k]]
-    rbm = [params[:rbm_125], params[:rbm_250], params[:rbm_1k], params[:rbm_2k], params[:rbm_4k], params[:rbm_8k]]
-    lbm = [params[:lbm_125], params[:lbm_250], params[:lbm_1k], params[:lbm_2k], params[:lbm_4k], params[:lbm_8k]]
+    ra = [params[:ra_125], params[:ra_250], params[:ra_500], params[:ra_1k], params[:ra_2k], params[:ra_4k], params[:ra_8k]]
+    la = [params[:la_125], params[:la_250], params[:ra_500], params[:la_1k], params[:la_2k], params[:la_4k], params[:la_8k]]
+    ram = [params[:ram_125], params[:ram_250], params[:ra_500], params[:ram_1k], params[:ram_2k], params[:ram_4k], params[:ram_8k]]
+    lam = [params[:lam_125], params[:lam_250], params[:ra_500], params[:lam_1k], params[:lam_2k], params[:lam_4k], params[:lam_8k]]
+    rb = [params[:rb_125], params[:rb_250], params[:ra_500], params[:rb_1k], params[:rb_2k], params[:rb_4k], params[:rb_8k]]
+    lb = [params[:lb_125], params[:lb_250], params[:ra_500], params[:lb_1k], params[:lb_2k], params[:lb_4k], params[:lb_8k]]
+    rbm = [params[:rbm_125], params[:rbm_250], params[:ra_500], params[:rbm_1k], params[:rbm_2k], params[:rbm_4k], params[:rbm_8k]]
+    lbm = [params[:lbm_125], params[:lbm_250], params[:ra_500], params[:lbm_1k], params[:lbm_2k], params[:lbm_4k], params[:lbm_8k]]
     data = Audiodata.new("cooked", ra,la,rb,lb,ram,lam,rbm,lbm)
     if ra.none? && la.none?
       [400, 'the audiogram cannot be saved'] # 400 # Bad Request
@@ -289,8 +293,8 @@ class Main < Sinatra::Base
       [400, 'the audiogram cannot be saved'] # 400 # Bad Request
       break
     end
-    params[:hh] = 0 if not params[:hh]
-    params[:mm] = 0 if not params[:mm]
+    params[:hh] = 0 if (not params[:hh] || params[:hh] == "")
+    params[:mm] = 0 if (not params[:hh] || params[:hh] == "")
 
     if not @patient = Patient.find_by_hp_id(hp_id)
       @patient = Patient.new
@@ -309,6 +313,7 @@ class Main < Sinatra::Base
           build_graph
           if @audiogram.save
             204 # No Content # success
+            redirect to("/patients/#{@patient.id}")
           else
             [400, 'the audiogram cannot be saved'] # 400 # Bad Request
           end
