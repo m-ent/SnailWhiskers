@@ -1,6 +1,6 @@
 <%= "<!-- /patients/#{@patient.id} -->" %>
 <link rel="stylesheet" type="text/css" href="/css/patients.css" >
-<h1>ID: <%= reg_id(@patient.hp_id) %></h1>
+<h1>ID: <%= reg_id(@patient.hp_id) %> (<%= id_2_name(valid_id?(@patient.hp_id)) %>)</h1>
 
 <% if (count = @patient.audiograms.length) > 0 %>
   <% recent = (@patient.audiograms.sort {|a,b| b.examdate <=> a.examdate}).shift(5) %>

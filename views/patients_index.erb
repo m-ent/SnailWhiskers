@@ -7,6 +7,7 @@
 <table>
   <tr>
     <th>ID</th>
+    <th>Name</th>
     <th></th>
     <th></th>
   </tr>
@@ -14,6 +15,7 @@
 <% @patients.each do |patient| %>
   <tr>
     <td><%= patient.hp_id %></td>
+    <td><%= id_2_name(patient.hp_id) %></td>
     <td><%= "<a href=#{url "/patients/#{patient.id}"}>" %>Show</a>
     <td><% target = "/patients/#{patient.id}" %>
         <%= "<form action=\"#{target}\" method=\"POST\">" %>

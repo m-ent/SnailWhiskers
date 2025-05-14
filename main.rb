@@ -2,6 +2,7 @@ require 'sinatra/base'
 require 'sinatra/reloader'
 require 'sinatra/activerecord'
 require 'rack-flash'
+require 'net/http'
 
 require './models'
 require './helpers'
@@ -580,5 +581,16 @@ class Main < Sinatra::Base
     return result
   end
 
+  def id_2_name(hp_id)
+    id_name_api_server = "http://192.168.20.224:4567/patients"
+    response = Net::HTTP.get_response(URI("#{id_name_api_server}/#{hp_id}"))
+    case response.code
+    when "404"
+      return "---"
+    else
+      name = JSON.parse(response.body)["kanji-shimei"]
+      return name
+    end
+  end
 end
 

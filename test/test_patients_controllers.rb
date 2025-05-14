@@ -1,6 +1,7 @@
 require File.expand_path '../test_helper.rb', __FILE__
 
 require 'factory_bot'
+require 'webmock/minitest'
 require './main'
 require './lib/id_validation'
 
@@ -9,6 +10,8 @@ describe 'PatientsController' do
     @valid_id1 = '19'
     @valid_id2 = '27' #35 43 51 60 78 86 94
     @invalid_hp_id = '18'
+    @name = {valid_id?(@valid_id1) => "Name One", valid_id?(@valid_id2) => "Name Two"}
+    @id_name_api_server = "http://192.168.20.224:4567/patients"
   end
 
   # return the minimal set of attributes required to create a valid Patient
@@ -25,7 +28,14 @@ describe 'PatientsController' do
 
   describe "GET patients#index (/patients)" do
     before do
+      Patient.delete_all
+      Patient.create!(hp_id: valid_id?(@valid_id1))
+      Patient.create!(hp_id: valid_id?(@valid_id2))
       @patients = Patient.all
+      @patients.each do |p|
+        stub_request(:get, "#{@id_name_api_server}/#{p.hp_id}").to_return(
+          body: "{\"kanji-shimei\":\"#{@name[p.hp_id]}\"}")
+      end
       get '/patients'
       @response = last_response
     end
@@ -37,6 +47,23 @@ describe 'PatientsController' do
       @patients.each do |patient|
          _(@response.body).must_include patient.hp_id
       end
+    end
+
+    it '全ての patient の名前が表示されること(shows all patients name)' do
+      _(@response.body).must_include(@name[valid_id?(@valid_id1)]) # => "Name One"
+      _(@response.body).must_include(@name[valid_id?(@valid_id2)]) # => "Name Two"
+    end
+
+    it '名前に紐付いていない hp_id の場合は、名前の代わりに --- と表示されること(shows "---" if the hp_id isn\'t bound to a name' do
+      valid_id3 = '35'
+      Patient.delete_all
+      Patient.create!(hp_id: valid_id?(@valid_id1))
+      Patient.create!(hp_id: valid_id?(valid_id3))
+      stub_request(:get, "#{@id_name_api_server}/#{Patient.last.hp_id}").to_return(status: [404, "Not Found"])
+      get '/patients'
+      @response = last_response
+      _(@response.body).must_include(@name[valid_id?(@valid_id1)]) # => "Name One"
+      _(@response.body).must_include("---") # => "---"
     end
 
     it 'patients#show への link があること(has a link to patients#show)' do
@@ -62,6 +89,8 @@ describe 'PatientsController' do
       @target_hp_id = valid_id?(@valid_id1) # 0000000019
       Patient.delete_all
       @patient = Patient.create!(hp_id: @target_hp_id)
+      stub_request(:get, "#{@id_name_api_server}/#{@patient.hp_id}").to_return(
+          body: "{\"kanji-shimei\":\"#{@name[@target_hp_id]}\"}")
       get "/patients/#{@patient.id}"
       @response = last_response
     end
@@ -70,6 +99,10 @@ describe 'PatientsController' do
       _(@response.ok?).must_equal true
       _(@response.body).must_include "<!-- /patients/#{@patient.id} -->"
       _(@response.body).must_include "#{@target_hp_id[0..4]}-#{@target_hp_id[5..9]}" # 00000-00019 を含むか
+    end
+
+    it '指定された patient の名前が表示されること(show the patient\'s name' do
+      _(@response.body).must_include(@name[valid_id?(@valid_id1)]) # => "Name One"
     end
 
     it 'patients#index への link があること(has a link to patients#index)' do
@@ -144,6 +177,8 @@ describe 'PatientsController' do
       end
 
       it "redirect された先が、作成された patient の view であること(redirects to the view of the created patient)" do
+        stub_request(:get, "#{@id_name_api_server}/#{valid_attributes[:hp_id]}").to_return(
+            body: "{\"kanji-shimei\":\"#{valid_attributes[:hp_id]}\"}")
         post "/patients", valid_attributes, valid_session
         follow_redirect!
         _(last_response.ok?).must_equal true
@@ -213,6 +248,8 @@ describe 'PatientsController' do
       @patient = Patient.create! valid_attributes
       @id_validation_tmp = Id_validation::state
       Id_validation::enable  # 設定によらず強制的に validation を有効にしておく
+      stub_request(:get, "#{@id_name_api_server}/#{@patient.hp_id}").to_return(
+          body: "{\"kanji-shimei\":\"#{@name[@target_hp_id]}\"}")
     end
 
     after do
@@ -286,6 +323,8 @@ describe 'PatientsController' do
         Patient.delete_all
         @patient = Patient.create! valid_attributes
         @hp_id = @patient.hp_id
+        stub_request(:get, "#{@id_name_api_server}/#{@patient.hp_id}").to_return(
+            body: "{\"kanji-shimei\":\"#{@name[@target_hp_id]}\"}")
         get "/patients_by_id/#{@hp_id}", valid_session
       end
 

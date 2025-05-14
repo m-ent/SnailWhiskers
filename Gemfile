@@ -19,4 +19,5 @@ group :test, :development do
   gem 'factory_bot'
   gem 'minitest'
   gem 'minitest-reporters' # Rspec の様に spec のドキュメントを出力
+  gem 'webmock'
 end
