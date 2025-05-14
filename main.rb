@@ -352,7 +352,7 @@ class Main < Sinatra::Base
     a = Audio.new(convert_to_audiodata(@audiogram))
     output_file = "#{Image_root}/#{@audiogram.image_location}"
     a.draw(output_file) # a.draw(filename)に変更されている
-    system("convert -geometry #{Thumbnail_size} #{output_file} \
+    system("magick #{output_file} -geometry #{Thumbnail_size} \
       #{Image_root}/#{thumbnail_location}") ### convert to 160x160px thumbnail
   end
 
