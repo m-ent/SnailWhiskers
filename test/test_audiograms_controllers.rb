@@ -1,6 +1,7 @@
 require File.expand_path '../test_helper.rb', __FILE__
 
 require 'factory_bot'
+require 'webmock/minitest'
 require './main'
 require './lib/id_validation'
 
@@ -13,6 +14,7 @@ describe 'AudiogramsController' do
     @right_user = "audioadmin"
     @right_pw = "audioadmin"
     @wrong_pw = "wrong_password"
+    @id_name_api_server = "http://192.168.20.224:4567/patients"
   end
 
   # return the minimal set of attributes required to create a valid Audiogram
@@ -106,12 +108,22 @@ describe 'AudiogramsController' do
         f.write (@test_str = "test_string")
       end
       @patient.audiograms << @audiogram
+
+      @name = {@patient.hp_id => "Name One"}
+      stub_request(:get, "#{@id_name_api_server}/#{valid_id?(@patient.hp_id)}").to_return(
+          body: "{\"kanji-shimei\":\"#{@name[@patient.hp_id]}\"}")
+
       get "/patients/#{@patient.id}/audiograms/#{@audiogram.id}"
       @response = last_response
     end
 
-    it "指定された audiogram が表示されること(shows the audiogram)" do
+    it "指定された patient の hp_id と 名前が表示されること(shows the patient\'s hp_id and name)" do
       _(@response.ok?).must_equal true
+      _(@response.body).must_include @patient.hp_id.to_s
+      _(@response.body).must_include @name[@patient.hp_id]
+    end
+
+    it "指定された audiogram が表示されること(shows the audiogram)" do
       _(@response.body).must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id} -->"
       _(@response.body).must_include @audiogram.examdate.to_s
     end
@@ -155,6 +167,8 @@ describe 'AudiogramsController' do
     before do
       @audiogram = Audiogram.create! valid_attributes
       @patient.audiograms << @audiogram
+      stub_request(:get, "#{@id_name_api_server}/#{valid_id?(@patient.hp_id)}").to_return(
+          body: "{\"kanji-shimei\":\"Name One\"}")
     end
 
     describe "basic認証をpassする場合(when basic-auth was passed)" do
@@ -196,6 +210,8 @@ describe 'AudiogramsController' do
     before do
       @audiogram = Audiogram.create! valid_attributes
       @patient.audiograms << @audiogram
+      stub_request(:get, "#{@id_name_api_server}/#{valid_id?(@patient.hp_id)}").to_return(
+          body: "{\"kanji-shimei\":\"Name One\"}")
     end
 
     describe "valid params を入力した場合(when params were valid)" do
@@ -317,6 +333,8 @@ describe 'AudiogramsController' do
       @patient.audiograms = []
       @patient.audiograms << audiogram
       @audiogram = @patient.audiograms.first
+      stub_request(:get, "#{@id_name_api_server}/#{valid_id?(@patient.hp_id)}").to_return(
+          body: "{\"kanji-shimei\":\"Name One\"}")
     end
 
     it "commentを更新できること(update the comment)" do
