@@ -108,7 +108,6 @@ describe 'AudiogramsController' do
         f.write (@test_str = "test_string")
       end
       @patient.audiograms << @audiogram
-
       @name = {@patient.hp_id => "Name One"}
       stub_request(:get, "#{@id_name_api_server}/#{valid_id?(@patient.hp_id)}").to_return(
           body: "{\"kanji-shimei\":\"#{@name[@patient.hp_id]}\"}")
@@ -118,14 +117,15 @@ describe 'AudiogramsController' do
     end
 
     it "指定された patient の hp_id と 名前が表示されること(shows the patient\'s hp_id and name)" do
+  pp @response.body
       _(@response.ok?).must_equal true
       _(@response.body).must_include @patient.hp_id.to_s
       _(@response.body).must_include @name[@patient.hp_id]
     end
 
-    it "指定された audiogram が表示されること(shows the audiogram)" do
+    it "指定された audiogram が localtime(JST: +0900) を用いて表示されること(shows the audiogram using localtime)" do
       _(@response.body).must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id} -->"
-      _(@response.body).must_include @audiogram.examdate.to_s
+      _(@response.body).must_include @audiogram.examdate.getlocal.to_s
     end
 
     it "4分法平均値が表示されること(shows the mean value of audiogram" do

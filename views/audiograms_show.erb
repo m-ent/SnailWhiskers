@@ -3,7 +3,7 @@
 
 <h1>ID: <%=h reg_id(@patient.hp_id) %> (<%= id_2_name(valid_id?(@patient.hp_id)) %>)
 <%= "<a href=#{url "/patients/#{@patient.id}/audiograms"}>" %>[結果一覧へ]</a></h1>
-検査日: <%=h @audiogram.examdate %> / 修正日: <%=h @audiogram.updated_at %><br />
+検査日: <%=h @audiogram.examdate.localtime %> / 修正日: <%=h @audiogram.updated_at.localtime %><br />
 オージオメータ: <%=h @audiogram.audiometer %>
 
 <table>
