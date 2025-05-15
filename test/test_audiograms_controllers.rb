@@ -117,7 +117,6 @@ describe 'AudiogramsController' do
     end
 
     it "指定された patient の hp_id と 名前が表示されること(shows the patient\'s hp_id and name)" do
-  pp @response.body
       _(@response.ok?).must_equal true
       _(@response.body).must_include @patient.hp_id.to_s
       _(@response.body).must_include @name[@patient.hp_id]
@@ -645,6 +644,11 @@ describe 'AudiogramsController' do
       post "/audiograms/manual_create", @post_data
       _(Patient.all.length).must_equal 1
       _(Audiogram.all.length).must_equal 1
+    end
+
+    it "正しいデータをPOSTした時に examdate が正しく記録されること" do
+      post "/audiograms/manual_create", @post_data
+      _(Audiogram.first.examdate).must_equal Time.local(@examdate[0], @examdate[1], @examdate[2], @examdate[3], @examdate[4])
     end
 
     it "聴力データが全くない場合は Patients と Audiograms が変化しないこと" do
