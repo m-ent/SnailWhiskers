@@ -259,6 +259,7 @@ class Main < Sinatra::Base
 
   get '/audiograms/all_rebuild' do #audiograms#all_rebuild
     protected!
+    time0 = Time.now
     audiograms = Audiogram.all
     audiograms.each do |a|
       @audiogram = a
@@ -269,7 +270,7 @@ class Main < Sinatra::Base
         [400, 'the audiogram cannot be saved'] # 400 # Bad Request
       end
     end
-    flash[:notice] = "Rebuild success!"
+    flash[:notice] = "Rebuild success! (#{audiograms.length} #{pluralize(audiograms.length, "audiogram")} for #{Time.now - time0} sec)"
     redirect to("/controlpanel")
   end
 
