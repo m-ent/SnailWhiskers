@@ -37,6 +37,9 @@ describe 'AudiogramsController' do
       )
       @patient.audiograms = []
       @patient.audiograms << audiogram
+      @name = {@patient.hp_id => "Name One"}
+      stub_request(:get, "#{@id_name_api_server}/#{valid_id?(@patient.hp_id)}").to_return(
+          body: "{\"kanji-shimei\":\"#{@name[@patient.hp_id]}\"}")
       get "/patients/#{@patient.id}/audiograms"
       @response = last_response
     end
@@ -255,6 +258,8 @@ describe 'AudiogramsController' do
     before do
       @audiogram = Audiogram.create! valid_attributes
       @patient.audiograms << @audiogram
+      stub_request(:get, "#{@id_name_api_server}/#{valid_id?(@patient.hp_id)}").to_return(
+          body: "{\"kanji-shimei\":\"Name One\"}")
     end
 
     describe "basic認証に対して username:password を提示しない場合(when username:password were not given to basic-auth)" do

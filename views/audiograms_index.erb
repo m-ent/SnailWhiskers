@@ -3,7 +3,8 @@
 <% require './helpers' %>
 
 <h1>Listing <%= pluralize(@patient.audiograms.length, "audiogram") %> for 
-<%= "<a href=#{url "/patients/#{@patient.id}"}>#{reg_id(@patient.hp_id)}" %></a></h1>
+  <%= "<a href=#{url "/patients/#{@patient.id}"}>#{reg_id(@patient.hp_id)}" %></a> 
+  (<%= id_2_name(valid_id?(@patient.hp_id)) %>) </h1>
 
 <table>
   <tr class="colored">
