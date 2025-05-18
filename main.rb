@@ -4,6 +4,7 @@ require 'sinatra/activerecord'
 require 'rack-flash'
 require 'net/http'
 
+require './app_config'
 require './models'
 require './helpers'
 require './lib/audio_class'
@@ -108,7 +109,7 @@ class Main < Sinatra::Base
     # create exam data directly from http request
     # データなどはmultipart/form-dataの形式で送信する
     # params は params[:datatype][:examdate][:equip_name][:comment][:data]
-    # equip_name は検査機器の名称: 'AA-97' など
+    # equip_name は検査機器の名称: 'AA-79S' など
     # datatype は今のところ 'audiogram', 'impedance', 'images'
     hp_id = valid_id?(params[:hp_id]) || "invalid_id"
     if not @patient = Patient.find_by_hp_id(hp_id)
@@ -151,6 +152,7 @@ class Main < Sinatra::Base
   get '/patients/:patient_id/audiograms/:id' do # audiograms#show
     @patient = Patient.find(params[:patient_id])
     @audiogram = @patient.audiograms.find(params[:id])
+    @audiogram.hospital = clinic_name if (@audiogram.hospital == nil || @audiogram.hospital == "")
     app_root = File.dirname(__FILE__)
     image_root = "assets/images"
     if not File.exist?("#{app_root}/#{image_root}/#{@audiogram.image_location}") # imageがなければ作る
@@ -582,7 +584,6 @@ class Main < Sinatra::Base
   end
 
   def id_2_name(hp_id)
-    id_name_api_server = "http://192.168.20.224:4567/patients"
     response = Net::HTTP.get_response(URI("#{id_name_api_server}/#{hp_id}"))
     case response.code
     when "404"

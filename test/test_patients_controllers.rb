@@ -365,7 +365,7 @@ describe 'PatientsController' do
 
   describe "POST patients_by_id_create_exam (/patients_by_id/:hp_id/create_exam)" do
     # params は params[:datatype][:examdate][:equip_name][:comment][:data]
-    # equip_name は検査機器の名称: 'AA-97' など
+    # equip_name は検査機器の名称: 'AA-79S' など
     # datatype は今のところ audiogram, impedance, images
     let(:valid_audio_attributes) { {datatype: @datatype, examdate: @examdate, \
                                     equip_name: @equip_name, comment: @comment, \

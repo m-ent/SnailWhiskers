@@ -150,6 +150,10 @@ describe 'AudiogramsController' do
       _(@response.body).must_include "patients/#{@patient.id}/audiograms"
     end
 
+    it 'clinic 名が表示されていること(shows the name of the clinic)' do
+      _(@response.body).must_include clinic_name
+    end
+
     it "聴検の画像が保存されている場合、画像が更新されないこと(doesn't touch the graph when the graph was already saved)" do
       content = String.new
       File::open(@image_file) do |f|
