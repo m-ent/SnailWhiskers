@@ -22,7 +22,7 @@
 <% @audiograms.each do |audiogram| %>
   <tr class="<%= cycle ? "" : "colored" %>">
     <td><%#= check_box_tag "selected[]", audiogram.id %><br><a href="#search" %>▼</a></td>
-    <td><%= audiogram.examdate.strftime("%Y/%m/%d") %><br><%= audiogram.examdate.strftime("%X") %></td>
+    <td><%= audiogram.examdate.getlocal.strftime("%Y/%m/%d") %><br><%= audiogram.examdate.getlocal.strftime("%X") %></td>
     <td><%= "<a href=#{url "/patients/#{@patient.id}/audiograms/#{audiogram.id}"}>" %>
         <%= "<img src=#{"\"\/" + audiogram.image_location.sub("graphs", "thumbnails") + "\""}>" %></a>
     </td>

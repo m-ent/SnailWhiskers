@@ -44,12 +44,12 @@ describe 'AudiogramsController' do
       @response = last_response
     end
 
-    it "全ての audiogram が表示されること(all audiograms must be shown" do
+    it "全ての audiogram が localtime(JST: +0900) での日時表示と共に表示されること(all audiograms must be shown with localtime)" do
       _(@response.ok?).must_equal true
       _(@response.body).must_include "<!-- /patients/#{@patient.id}/audiograms -->"
       @patient.audiograms.each do |audiogram|
-        ex_date = audiogram.examdate.strftime("%Y/%m/%d")
-        ex_time = audiogram.examdate.strftime("%X")
+        ex_date = audiogram.examdate.getlocal.strftime("%Y/%m/%d")
+        ex_time = audiogram.examdate.getlocal.strftime("%X")
         _(@response.body).must_include ex_date
         _(@response.body).must_include ex_time
       end
@@ -125,7 +125,7 @@ describe 'AudiogramsController' do
       _(@response.body).must_include @name[@patient.hp_id]
     end
 
-    it "指定された audiogram が localtime(JST: +0900) を用いて表示されること(shows the audiogram using localtime)" do
+    it "指定された audiogram が localtime(JST: +0900) と共に表示されること(shows the audiogram with localtime)" do
       _(@response.body).must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id} -->"
       _(@response.body).must_include @audiogram.examdate.getlocal.to_s
     end
