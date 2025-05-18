@@ -270,7 +270,7 @@ class Main < Sinatra::Base
         [400, 'the audiogram cannot be saved'] # 400 # Bad Request
       end
     end
-    flash[:notice] = "Rebuild success! (#{audiograms.length} #{pluralize(audiograms.length, "audiogram")} for #{Time.now - time0} sec)"
+    flash[:notice] = "Rebuild success! (#{pluralize(audiograms.length, "audiogram")} for #{Time.now - time0} sec)"
     redirect to("/controlpanel")
   end
 
