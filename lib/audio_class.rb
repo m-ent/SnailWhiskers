@@ -60,15 +60,59 @@ def color_table
 end
 
 def put_symbol(context, sym, x, y, rgb) # symbol is Symbol, like :circle
-  symbols = {circle: ["○", 0, 0], cross: ["×", 1, 2], r_bracket: ["［", -5, 0], l_bracket: ["］", 12, 2],
-             ra_scaleout: ["↓", -2, -14], la_scaleout: ["↓", 2, -12], rb_scaleout: ["↓", -7, -14], lb_scaleout: ["↓", 7, -12]}
   xr = x.round
   yr = y.round
-  context.select_font_face "IPAexGothic"
-  context.set_font_size draw_rate(16)
   context.set_source_rgb(color_table[rgb])
-  context.move_to x - draw_rate(8 - symbols[sym][1]), y + draw_rate(6 - symbols[sym][2])
-  context.show_text symbols[sym][0]
+  context.move_to xr,yr
+  case sym
+  when :circle
+    context.arc(xr, yr, draw_rate(6), 0, 2 * Math::PI)
+  when :cross
+    offset = draw_rate(12) / 2
+    x1 = xr - offset
+    x2 = xr + offset
+    y1 = yr - offset
+    y2 = yr + offset
+    stroke_line(context, x1, y1, x2, y2, color_table[rgb])
+    stroke_line(context, x1, y2, x2, y1, color_table[rgb])
+  when :r_bracket, :l_bracket
+    sign = (sym == :r_bracket ? -1 : 1)
+    context.set_dash [1, 0]
+    offset1 = draw_rate(20) / 2
+    offset2 = draw_rate(16) / 2
+    x1 = xr + sign * offset1
+    x2 = xr + sign * offset1 / 2
+    y1 = yr - offset2
+    y2 = yr + offset2
+    stroke_line(context, x1, y1, x1, y2, color_table[rgb])
+    stroke_line(context, x1, y1, x2, y1, color_table[rgb])
+    stroke_line(context, x1, y2, x2, y2, color_table[rgb])
+  when :ra_scaleout, :la_scaleout
+    sign = (sym == :ra_scaleout ? -1 : 1)
+    offset = draw_rate(12) / 2
+    x1 = xr + sign *  offset
+    x2 = x1 - offset / 2
+    x3 = x1 + offset / 2
+    y1 = yr + offset
+    y2 = yr + offset * 3
+    y3 = yr + offset * 2
+    stroke_line(context, x1, y1, x1, y2, color_table[rgb])
+    stroke_line(context, x2, y3, x1, y2, color_table[rgb])
+    stroke_line(context, x3, y3, x1, y2, color_table[rgb])
+  when :rb_scaleout, :lb_scaleout
+    sign = (sym == :rb_scaleout ? -1 : 1)
+    offset1 = draw_rate(20) / 2
+    offset2 = draw_rate(12) / 2
+    x1 = xr + sign *  offset1
+    x2 = x1 - offset2 / 2
+    x3 = x1 + offset2 / 2
+    y1 = yr + offset2
+    y2 = yr + offset2 * 3
+    y3 = yr + offset2 * 2
+    stroke_line(context, x1, y1, x1, y2, color_table[rgb])
+    stroke_line(context, x2, y3, x1, y2, color_table[rgb])
+    stroke_line(context, x3, y3, x1, y2, color_table[rgb])
+  end
 end
 
 def line(context, x1, y1, x2, y2, rgb, dotted)
@@ -365,11 +409,14 @@ end
 #----------------------------------------#
 if ($0 == __FILE__)
   ra = ["0","10","20","30","40","50","60"]
+#  ra = ["0","10","20","30","40","50","60_"]
   la = ["1","11","21","31","41","51","61"]
   rm = ["b0","b10","b20","b30","b40","b50","b60"]
+#  rm = ["b0","b10","b20","b30","b40","b50","b60_"]
   lm = ["w1","w11","w21","w31","w41","w51","w61"]
 
-  dd = Audiodata.new("cooked", ra,la,ra,la,rm,lm,lm,rm)
+#  dd = Audiodata.new("cooked", ra,la,ra,la,rm,lm,lm,rm)
+  dd = Audiodata.new("cooked", ra,la,rm,lm)
   aa = Audio.new(dd)
 
   p aa.reg_mean4
