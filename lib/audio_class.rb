@@ -62,10 +62,10 @@ end
 def put_symbol(context, sym, x, y, rgb) # symbol is Symbol, like :circle
   xr = x.round
   yr = y.round
-  context.set_source_rgb(color_table[rgb])
-  context.move_to xr,yr
   case sym
   when :circle
+    context.move_to xr + draw_rate(6), yr
+    context.set_source_rgb(color_table[rgb])
     context.arc(xr, yr, draw_rate(6), 0, 2 * Math::PI)
   when :cross
     offset = draw_rate(12) / 2
