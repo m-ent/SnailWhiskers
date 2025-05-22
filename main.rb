@@ -3,6 +3,7 @@ require 'sinatra/reloader'
 require 'sinatra/activerecord'
 require 'rack-flash'
 require 'net/http'
+require 'timeout'
 
 require './app_config'
 require './models'
@@ -585,13 +586,24 @@ class Main < Sinatra::Base
   end
 
   def id_2_name(hp_id)
-    response = Net::HTTP.get_response(URI("#{id_name_api_server}/#{hp_id}"))
-    case response.code
-    when "404"
-      return "---"
+    timelimit = 2 #second
+    begin
+      Timeout.timeout(timelimit) {
+        response = Net::HTTP.get_response(URI("#{id_name_api_server}/#{hp_id}"))
+      }
+    rescue Timeout::Error
+      response = nil
+    end
+    if response
+      case response.code
+      when "404"
+        return "---"
+      else
+        name = JSON.parse(response.body)["kanji-shimei"]
+        return name
+      end
     else
-      name = JSON.parse(response.body)["kanji-shimei"]
-      return name
+      return "---"
     end
   end
 end
