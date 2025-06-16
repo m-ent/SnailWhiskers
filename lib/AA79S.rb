@@ -289,7 +289,7 @@ puts "BCC error"
     for i in 0..6
       item = mask_array[i]
       case item.class.to_s
-      when "String "
+      when "String"
         if item
           if /^([A-Z]+|[a-z]+)(\d+)/ =~ item
             result << [$1, $2.to_i] # [mask_type, mask_level]
