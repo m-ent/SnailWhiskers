@@ -586,6 +586,7 @@ class Main < Sinatra::Base
   end
 
   def id_2_name(hp_id)
+    response = nil
     timelimit = 2 #second
     begin
       Timeout.timeout(timelimit) {
