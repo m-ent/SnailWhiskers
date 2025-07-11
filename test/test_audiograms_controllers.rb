@@ -709,5 +709,17 @@ describe 'AudiogramsController' do
       _(Patient.all.length).must_equal 1
       _(Audiogram.all.length).must_equal 1
     end
+
+    it "POST項目の聴力データが1項目だけでも、background とは異なるgraphが作成されること" do
+      post_data = {:hp_id => @valid_hp_id, \
+                   :year => @examdate[0], :month => @examdate[1], :day => @examdate[2], \
+                   :hh => @examdate[3], :mm => @examdate[4], \
+                   :equip_name => @audiometer, :datatype => @datatype, :comment => @comment, \
+                   :ra_1k => @ra[3]}
+      post "/audiograms/manual_create", post_data
+      _(Patient.all.length).must_equal 1
+      _(Audiogram.all.length).must_equal 1
+      _(Digest::MD5.file("./assets/#{Audiogram.last.image_location}")).wont_equal Digest::MD5.file("./assets/parts/background_audiogram#{Graph_size}.png")
+    end
   end
 end
