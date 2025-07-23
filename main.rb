@@ -172,7 +172,10 @@ class Main < Sinatra::Base
   put '/patients/:patient_id/audiograms/:id' do # audiograms#update
     @patient = Patient.find(params[:patient_id])
     @audiogram = @patient.audiograms.find(params[:id])
-    if @audiogram.update(select_params(params, [:examdate, :comment, :image_location,
+    if @audiogram.examdate != Time.local(params[:t_year], params[:t_month], params[:t_day], params[:t_hour], params[:t_min], params[:t_sec])
+      @audiogram.examdate = Time.local(params[:t_year], params[:t_month], params[:t_day], params[:t_hour], params[:t_min], params[:t_sec])
+    end
+    if @audiogram.update(select_params(params, [:comment, 
       :ac_rt_125, :ac_rt_250, :ac_rt_500, :ac_rt_1k, :ac_rt_2k, :ac_rt_4k, :ac_rt_8k,
       :ac_lt_125, :ac_lt_250, :ac_lt_500, :ac_lt_1k, :ac_lt_2k, :ac_lt_4k, :ac_lt_8k,
       :bc_rt_250, :bc_rt_500, :bc_rt_1k, :bc_rt_2k, :bc_rt_4k, :bc_rt_8k,

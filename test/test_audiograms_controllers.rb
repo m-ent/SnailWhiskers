@@ -218,25 +218,29 @@ describe 'AudiogramsController' do
       @patient.audiograms << @audiogram
       stub_request(:get, "#{@id_name_api_server}/#{valid_id?(@patient.hp_id)}").to_return(
           body: "{\"kanji-shimei\":\"Name One\"}")
+      @tn = Time.now
     end
 
     describe "valid params を入力した場合(when params were valid)" do
       it "指定された audiogram が update されること(updates the audiogram)" do
         put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: 'update',\
-                                                                            examdate: Time.now}
+                                                  t_year: @tn.year, t_month: @tn.month, t_day: @tn.day,\
+                                                  t_hour: @tn.hour , t_min: @tn.min , t_sec: @tn.sec}
         audiogram_reloaded = Audiogram.find(@audiogram.id)
         _(audiogram_reloaded.audiometer).wont_equal @audiogram.audiometer
       end
 
       it "redirect されること(redirects the page)" do
         put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: @audiogram.audiometer,\
-                                                                            examdate: @audiogram.examdate}
+                                                  t_year: @tn.year, t_month: @tn.month, t_day: @tn.day,\
+                                                  t_hour: @tn.hour , t_min: @tn.min , t_sec: @tn.sec}
         _(last_response.redirect?).must_equal true
       end
 
       it "redirect された先が、指定された patient/audiogram の view であること(redirects to the view of the audiogram of the patient)" do
         put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: @audiogram.audiometer,\
-                                                                            examdate: @audiogram.examdate}
+                                                  t_year: @tn.year, t_month: @tn.month, t_day: @tn.day,\
+                                                  t_hour: @tn.hour , t_min: @tn.min , t_sec: @tn.sec}
         follow_redirect!
         _(last_response.ok?).must_equal true
         _(last_response.body).must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id} -->"
@@ -245,13 +249,17 @@ describe 'AudiogramsController' do
 
     describe "valid でない params を入力した場合(when params were not valid)" do
       it "指定された patient が update されないこと(doesn't update the patient)" do
-        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: nil}
+        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: nil,\
+                                                  t_year: @tn.year, t_month: @tn.month, t_day: @tn.day,\
+                                                  t_hour: @tn.hour , t_min: @tn.min , t_sec: @tn.sec}
         audiogram_reloaded = Audiogram.find(@audiogram.id)
         _(audiogram_reloaded.audiometer).must_equal @audiogram.audiometer
       end
 
       it "/patients/:patient_id/audiograms/:id/edit の view を表示すること(shows the view of /patients/:patient_id/audiograms/:id/edit" do
-        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: nil}
+        put "/patients/#{@patient.id}/audiograms/#{@audiogram.id}", params={audiometer: nil,\
+                                                  t_year: @tn.year, t_month: @tn.month, t_day: @tn.day,\
+                                                  t_hour: @tn.hour , t_min: @tn.min , t_sec: @tn.sec}
         _(last_response.ok?).must_equal true
         _(last_response.body).must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit -->"
       end

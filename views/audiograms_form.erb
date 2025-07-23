@@ -1,3 +1,8 @@
+<style>
+  input.wide {width: 8em;}
+  input.narrow {width: 3em;}
+</style>
+
 <%#= form_for([@patient, @audiogram]) do |f| %>
   <% if @audiogram.errors.any? %>
     <div id="error_explanation">
@@ -14,100 +19,125 @@
     <%#= f.label :examiner %><!-- br / -->
     <%#= f.text_field :examiner %>
   <!-- /div -->
+
   <div class="field">
     examdate<br>
     <% t = time_element(@audiogram.examdate) %>
-    <%= "<input type=\"text\" name=\"t_year\" value=\"#{t[:year]}\">" %>
-    <%= "<input type=\"text\" name=\"t_month\" value=\"#{t[:month]}\">" %>
-    <%= "<input type=\"text\" name=\"t_day\" value=\"#{t[:day]}\">" %>
-    <%= "<input type=\"text\" name=\"t_hour\" value=\"#{t[:hour]}\">" %>
-    <%= "<input type=\"text\" name=\"t_min\" value=\"#{t[:min]}\">" %>
-    <%= "<input type=\"text\" name=\"t_sec\" value=\"#{t[:sec]}\">" %>
+    <%= "<input type=\"text\" name=\"t_year\" value=\"#{t[:year]}\" class =\"narrow\">" %>年
+    <%= "<input type=\"text\" name=\"t_month\" value=\"#{t[:month]}\" class =\"narrow\">" %>月
+    <%= "<input type=\"text\" name=\"t_day\" value=\"#{t[:day]}\" class =\"narrow\">" %>日
+    ( <%= "<input type=\"text\" name=\"t_hour\" value=\"#{t[:hour]}\" class =\"narrow\">" %> : 
+    <%= "<input type=\"text\" name=\"t_min\" value=\"#{t[:min]}\" class =\"narrow\">" %> : 
+    <%= "<input type=\"text\" name=\"t_sec\" value=\"#{t[:sec]}\" class =\"narrow\">" %> ) (JST +0900)
   </div>
   <div class="field">
     comment<br>
     <%= "<input type=\"text\" name=\"comment\" value=\"#{@audiogram.comment}\">" %>
   </div>
 
-  <% ["rt", "lt"].each do |side| %>
-    <% ["125", "250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
-      <div class="field">
-        <%= "ac_#{side}_#{freq}" %><br>
-        <%= "<input type=\"text\" name=\"ac_#{side}_#{freq}\"
-          value=\"#{eval("@audiogram.ac_#{side}_#{freq}")}\">" %>
-      </div>
-    <% end %>
-  <% end %>
+  <p>
+  Audiogram<br>
+  <table border="1">
+    <tr>
+      <th>side</th>
+      <th>125Hz</th>
+      <th>250Hz</th>
+      <th>500Hz</th>
+      <th>1kHz</th>
+      <th>2kHz</th>
+      <th>4kHz</th>
+      <th>8kHz</th>
+    </tr>
 
-  <% ["rt", "lt"].each do |side| %>
-    <% ["250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
-      <div class="field">
-        <%= "bc_#{side}_#{freq}" %><br>
-        <%= "<input type=\"text\" name=\"bc_#{side}_#{freq}\"
-          value=\"#{eval("@audiogram.bc_#{side}_#{freq}")}\">" %>
-      </div>
-    <% end %>
-  <% end %>
+    <tr>
+      <td>R-Air</td>
+      <% ["125", "250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+        <div class="field">
+          <td><%= "<input type=\"text\" name=\"ac_rt_#{freq}\"
+            value=\"#{eval("@audiogram.ac_rt_#{freq}")}\" class=\"narrow\">" %>
+              <%= "<input type=\"checkbox\" name=\"ac_rt_#{freq}_scaleout\"
+            value=\"#{eval("@audiogram.ac_rt_#{freq}_scaleout ? \"true\" : \"\"")}\" #{eval("\"checked\" if @audiogram.ac_rt_#{freq}_scaleout")}>" %></td>
+        </div>
+      <% end %>
+    </tr>
+    <tr>
+      <td>R-Air-mask</td>
+      <% ["125", "250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+        <div class="field">
+          <td><%= "<input type=\"text\" name=\"mask_ac_rt_#{freq}\"
+            value=\"#{eval("@audiogram.mask_ac_rt_#{freq}")}\" class=\"narrow\">" %></td>
+        </div>
+      <% end %>
+    </tr>
+    <tr>
+      <td>L-Air</td>
+      <% ["125", "250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+        <div class="field">
+          <td><%= "<input type=\"text\" name=\"ac_lt_#{freq}\"
+            value=\"#{eval("@audiogram.ac_lt_#{freq}")}\" class=\"narrow\">" %>
+              <%= "<input type=\"checkbox\" name=\"ac_lt_#{freq}_scaleout\"
+          value=\"#{eval("@audiogram.ac_lt_#{freq}_scaleout") ? "true" : ""}\">" %></td>
+        </div>
+      <% end %>
+    </tr>
+    <tr>
+      <td>L-Air-mask</td>
+      <% ["125", "250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+        <div class="field">
+          <td><%= "<input type=\"text\" name=\"mask_ac_lt_#{freq}\"
+            value=\"#{eval("@audiogram.mask_ac_lt_#{freq}")}\" class=\"narrow\">" %></td>
+        </div>
+      <% end %>
+    </tr>
 
-  <% ["rt", "lt"].each do |side| %>
-    <% ["125", "250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
-      <div class="field">
-        <%= "<input type=\"checkbox\" name=\"ac_#{side}_#{freq}_scaleout\"
-          value=\"#{eval("@audiogram.ac_#{side}_#{freq}_scaleout") ? "true" : ""}\">" %>
-        <%= "ac_#{side}_#{freq}_scaleout" %>
-      </div>
-    <% end %>
-  <% end %>
-
-  <% ["rt", "lt"].each do |side| %>
-    <% ["250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
-      <div class="field">
-        <%= "<input type=\"checkbox\" name=\"bc_#{side}_#{freq}_scaleout\"
-          value=\"#{eval("@audiogram.bc_#{side}_#{freq}_scaleout") ? "true" : ""}\">" %>
-        <%= "bc_#{side}_#{freq}_scaleout" %>
-      </div>
-    <% end %>
-  <% end %>
-
-  <% ["rt", "lt"].each do |side| %>
-    <% ["125", "250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
-      <div class="field">
-        <%= "mask_ac_#{side}_#{freq}" %><br>
-        <%= "<input type=\"text\" name=\"mask_ac_#{side}_#{freq}\"
-          value=\"#{eval("@audiogram.mask_ac_#{side}_#{freq}")}\">" %>
-      </div>
-    <% end %>
-  <% end %>
-
-  <% ["rt", "lt"].each do |side| %>
-    <% ["250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
-      <div class="field">
-        <%= "mask_bc_#{side}_#{freq}" %><br>
-        <%= "<input type=\"text\" name=\"mask_bc_#{side}_#{freq}\"
-          value=\"#{eval("@audiogram.mask_bc_#{side}_#{freq}")}\">" %>
-      </div>
-    <% end %>
-  <% end %>
-
-  <% ["rt", "lt"].each do |side| %>
-    <% ["125", "250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
-      <div class="field">
-        <%= "mask_ac_#{side}_#{freq}_type" %><br>
-        <%= "<input type=\"text\" name=\"mask_ac_#{side}_#{freq}_type\"
-          value=\"#{eval("@audiogram.mask_ac_#{side}_#{freq}_type")}\">" %>
-      </div>
-    <% end %>
-  <% end %>
-
-  <% ["rt", "lt"].each do |side| %>
-    <% ["250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
-      <div class="field">
-        <%= "mask_bc_#{side}_#{freq}_type" %><br>
-        <%= "<input type=\"text\" name=\"mask_bc_#{side}_#{freq}_type\"
-          value=\"#{eval("@audiogram.mask_bc_#{side}_#{freq}_type")}\">" %>
-      </div>
-    <% end %>
-  <% end %>
+    <tr>
+      <td>R-Bone</td>
+      <td></td>
+      <% ["250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+        <div class="field">
+          <td><%= "<input type=\"text\" name=\"bc_rt_#{freq}\"
+            value=\"#{eval("@audiogram.bc_rt_#{freq}")}\" class=\"narrow\">" %>
+              <%= "<input type=\"checkbox\" name=\"bc_rt_#{freq}_scaleout\"
+          value=\"#{eval("@audiogram.bc_rt_#{freq}_scaleout") ? "true" : ""}\">" %></td>
+        </div>
+      <% end %>
+    </tr>
+    <tr>
+      <td>R-Bone-mask</td>
+      <td></td>
+      <% ["250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+        <div class="field">
+          <td><%= "<input type=\"text\" name=\"mask_bc_rt_#{freq}\"
+            value=\"#{eval("@audiogram.mask_bc_rt_#{freq}")}\" class=\"narrow\">" %></td>
+        </div>
+      <% end %>
+    </tr>
+    <tr>
+      <td>L-Bone</td>
+      <td></td>
+      <% ["250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+        <div class="field">
+          <td><%= "<input type=\"text\" name=\"bc_lt_#{freq}\"
+            value=\"#{eval("@audiogram.bc_lt_#{freq}")}\" class=\"narrow\">" %>
+              <%= "<input type=\"checkbox\" name=\"bc_lt_#{freq}_scaleout\"
+          value=\"#{eval("@audiogram.bc_lt_#{freq}_scaleout") ? "true" : ""}\">" %></td>
+        </div>
+      <% end %>
+    </tr>
+    <tr>
+      <td>L-Bone-mask</td>
+      <td></td>
+      <% ["250", "500", "1k", "2k", "4k", "8k"].each do |freq| %>
+        <div class="field">
+          <td><%= "<input type=\"text\" name=\"mask_bc_lt_#{freq}\"
+            value=\"#{eval("@audiogram.mask_bc_lt_#{freq}")}\" class=\"narrow\">" %></td>
+        </div>
+      <% end %>
+    </tr>
+  </table>
+  </p>
+  Scale outは数字の後に "_" をつける("100_"など)<br>
+  masking(50dBの場合): band noise => "b50", white noise => "w50"
 
   <div class="field">
     <%= "<input type=\"checkbox\" name=\"manual_input\"
@@ -121,6 +151,7 @@
     hospital
     <%= "<input type=\"text\" name=\"hospital\" value=\"#{@audiogram.hospital}\">" %>
   </div>
+  <input type='hidden' name='datatype' value='audiogram'>
 
   <div class="actions">
     <input type='submit' value="Save Audiogram">
