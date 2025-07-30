@@ -11,6 +11,8 @@ describe 'AudiogramsController' do
   before do
     Patient.delete_all
     @patient = FactoryBot.create(:patient)
+    @patient.hp_id = valid_id?(@patient.hp_id)
+    @patient.save
     @right_user = "audioadmin"
     @right_pw = "audioadmin"
     @wrong_pw = "wrong_password"
@@ -121,7 +123,10 @@ describe 'AudiogramsController' do
 
     it "指定された patient の hp_id と 名前が表示されること(shows the patient\'s hp_id and name)" do
       _(@response.ok?).must_equal true
-      _(@response.body).must_include @patient.hp_id.to_s
+      id = @patient.hp_id.to_s
+      id = id[0..9] if id.length > 10
+      r_id = "0" * (10-id.length) + id
+      _(@response.body).must_include "#{r_id[0..4]}-#{r_id[5..9]}" #reg_id(@patient.hp_id.to_s)
       _(@response.body).must_include @name[@patient.hp_id]
     end
 
@@ -262,6 +267,83 @@ describe 'AudiogramsController' do
                                                   t_hour: @tn.hour , t_min: @tn.min , t_sec: @tn.sec}
         _(last_response.ok?).must_equal true
         _(last_response.body).must_include "<!-- /patients/#{@patient.id}/audiograms/#{@audiogram.id}/edit -->"
+      end
+    end
+
+    describe "既存のaudiogramのデータを update する際に(when update audiogram data)" do
+      before do
+        Audiogram.destroy_all
+        examdate = [2025, 1, 1, 10, 30] # 2025/1/1 10:30
+        post_data = {:hp_id => valid_id?(@patient.hp_id), \
+                  :year => examdate[0], :month => examdate[1], :day => examdate[2], \
+                  :hh => examdate[3], :mm => examdate[4], \
+                  :equip_name => "audiometer", :datatype => "audiogram", :comment => "", \
+                  :ra_125 => nil, :ra_250 => nil, :ra_500 => nil, :ra_1k => 100, \
+                  :ra_2k => nil, :ra_4k => nil, :ra_8k => nil, \
+                  :ram_125 => nil, :ram_250 => nil, :ram_500 => nil, :ram_1k => nil, \
+                  :ram_2k => nil, :ram_4k => nil, :ram_8k => nil, \
+                  :la_125 => nil, :la_250 => nil, :la_500 => nil, :la_1k => nil, \
+                  :la_2k => nil, :la_4k => nil, :la_8k => nil, \
+                  :lam_125 => nil, :lam_250 => nil, :lam_500 => nil, :lam_1k => nil, \
+                  :lam_2k => nil, :lam_4k => nil, :lam_8k => nil, \
+                  :rb_125 => nil, :rb_250 => nil, :rb_500 => nil, :rb_1k => nil, \
+                  :rb_2k => nil, :rb_4k => nil, :rb_8k => nil, \
+                  :rbm_125 => nil, :rbm_250 => nil, :rbm_500 => nil, :rbm_1k => nil, \
+                  :rbm_2k => nil, :rbm_4k => nil, :rbm_8k => nil, \
+                  :lb_125 => nil, :lb_250 => nil, :lb_500 => nil, :lb_1k => nil, \
+                  :lb_2k => nil, :lb_4k => nil, :lb_8k => nil, \
+                  :lbm_125 => nil , :lbm_250 => nil, :lbm_500 => nil, :lbm_1k => nil, \
+                  :lbm_2k => nil, :lbm_4k => nil, :lbm_8k => nil}
+        post "/audiograms/manual_create", post_data
+        @audiogram_2b_up =  Audiogram.last  # "audiogram to be updated"
+        @examd_2b_up = @audiogram_2b_up.examdate.getlocal
+        @md5_org = Digest::MD5.file("./assets/#{@audiogram_2b_up.image_location}")
+      end
+
+      describe "数値を変更する場合(by change the value of the data)" do
+        it "変更前と異なるgraphが作成されること(the graph should be changed)" do
+          put "/patients/#{@patient.id}/audiograms/#{@audiogram_2b_up.id}", params={audiometer: 'audiometer', ac_rt_1k: 90,\
+                                                  t_year: @examd_2b_up.year, t_month: @examd_2b_up.month, t_day: @examd_2b_up.day,\
+                                                  t_hour: @examd_2b_up.hour , t_min: @examd_2b_up.min , t_sec: @examd_2b_up.sec}
+          _(Digest::MD5.file("./assets/#{@audiogram_2b_up.image_location}")).wont_equal @md5_org
+        end
+      end
+
+      describe "Scale out を付与する場合(by add a scale out flag)" do
+        it "変更前と異なるgraphが作成されること(the graph should be changed)" do
+          put "/patients/#{@patient.id}/audiograms/#{@audiogram_2b_up.id}", params={audiometer: 'audiometer', ac_rt_1k: 100, ac_rt_1k_scaleout: true,\
+                                                  t_year: @examd_2b_up.year, t_month: @examd_2b_up.month, t_day: @examd_2b_up.day,\
+                                                  t_hour: @examd_2b_up.hour , t_min: @examd_2b_up.min , t_sec: @examd_2b_up.sec}
+          _(Digest::MD5.file("./assets/#{@audiogram_2b_up.image_location}")).wont_equal @md5_org
+        end
+      end
+
+      describe "検査日時を変更する場合(by changing the examdate)" do
+        before do
+          @month_diff = 1
+          @filename1 = "images/test/graphs/2025/" + \
+            "#{@examd_2b_up.year}#{"%02d" % @examd_2b_up.month}#{"%02d" % @examd_2b_up.day}-" + \
+            "#{"%02d" % @examd_2b_up.hour}#{"%02d" % @examd_2b_up.min}#{"%02d" % @examd_2b_up.sec}.png"
+          @filename2 = "images/test/graphs/2025/" + \
+            "#{@examd_2b_up.year}#{"%02d" % (@examd_2b_up.month.to_i + @month_diff)}#{"%02d" % @examd_2b_up.day}-" + \
+            "#{"%02d" % @examd_2b_up.hour}#{"%02d" % @examd_2b_up.min}#{"%02d" % @examd_2b_up.sec}.png"
+        end
+
+        it "変更前の日時のgraphが消去されること(the graph for pre-changed exam should be deleted)" do
+          _(File.exist?("./assets/#{@filename1}")).must_equal true
+          put "/patients/#{@patient.id}/audiograms/#{@audiogram_2b_up.id}", params={audiometer: 'audiometer', ac_rt_1k: 100,\
+                                                  t_year: @examd_2b_up.year, t_month: (@examd_2b_up.month.to_i + @month_diff), t_day: @examd_2b_up.day,\
+                                                  t_hour: @examd_2b_up.hour , t_min: @examd_2b_up.min , t_sec: @examd_2b_up.sec}
+          _(File.exist?("./assets/#{@filename1}")).must_equal false
+        end
+
+        it "変更後の日時のgraphが作成されること(the graph for post-changed exam should be created)" do
+          _(File.exist?("./assets/#{@filename2}")).must_equal false
+          put "/patients/#{@patient.id}/audiograms/#{@audiogram_2b_up.id}", params={audiometer: 'audiometer', ac_rt_1k: 100,\
+                                                  t_year: @examd_2b_up.year, t_month: (@examd_2b_up.month.to_i + @month_diff), t_day: @examd_2b_up.day,\
+                                                  t_hour: @examd_2b_up.hour , t_min: @examd_2b_up.min , t_sec: @examd_2b_up.sec}
+          _(File.exist?("./assets/#{@filename2}")).must_equal true
+        end
       end
     end
   end
@@ -469,7 +551,7 @@ describe 'AudiogramsController' do
       end
 
       it "hp_idが存在しないものの場合、新たにPatientを作成し、Audiogramのアイテム数が1増えること" do
-        if patient_to_delete = Patient.find_by_hp_id(@valid_hp_id)
+        if patient_to_delete = Patient.find_by(hp_id: valid_id?(@valid_hp_id.to_s))
           patient_to_delete.destroy
         end
         patient_num = Patient.all.length

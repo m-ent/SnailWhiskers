@@ -95,7 +95,7 @@ class Main < Sinatra::Base
 
   get '/patients_by_id/:hp_id' do # patients_by_id
     if (val_id = valid_id?(params[:hp_id])) 
-      @patient = Patient.where(hp_id: val_id).take
+      @patient = Patient.where(hp_id: val_id).take(1)
       if @patient
         redirect to("/patients/#{@patient.id}")
       else
@@ -175,6 +175,7 @@ class Main < Sinatra::Base
     if @audiogram.examdate != Time.local(params[:t_year], params[:t_month], params[:t_day], params[:t_hour], params[:t_min], params[:t_sec])
       @audiogram.examdate = Time.local(params[:t_year], params[:t_month], params[:t_day], params[:t_hour], params[:t_min], params[:t_sec])
     end
+
     if @audiogram.update(select_params(params, [:comment, 
       :ac_rt_125, :ac_rt_250, :ac_rt_500, :ac_rt_1k, :ac_rt_2k, :ac_rt_4k, :ac_rt_8k,
       :ac_lt_125, :ac_lt_250, :ac_lt_500, :ac_lt_1k, :ac_lt_2k, :ac_lt_4k, :ac_lt_8k,
@@ -203,6 +204,8 @@ class Main < Sinatra::Base
       :mask_bc_lt_250_type, :mask_bc_lt_500_type, :mask_bc_lt_1k_type,
         :mask_bc_lt_2k_type, :mask_bc_lt_4k_type, :mask_bc_lt_8k_type,
       :manual_input, :audiometer, :hospital]))
+        File::delete("#{Image_root}/#{@audiogram.image_location}") if File.exist?("#{Image_root}/#{@audiogram.image_location}")
+        build_graph
       redirect to("/patients/#{@patient.id}/audiograms/#{@audiogram.id}")
     else
       erb :audiograms_edit
@@ -303,8 +306,7 @@ class Main < Sinatra::Base
     end
     params[:hh] = 0 if (not params[:hh] || params[:hh] == "")
     params[:mm] = 0 if (not params[:hh] || params[:hh] == "")
-
-    if not @patient = Patient.find_by_hp_id(hp_id)
+    if not (@patient = Patient.find_by(hp_id: hp_id)) #Patient.where(hp_id: hp_id).take(1)
       @patient = Patient.new
       @patient.hp_id = hp_id
     end

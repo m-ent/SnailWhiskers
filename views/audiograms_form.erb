@@ -22,7 +22,7 @@
 
   <div class="field">
     examdate<br>
-    <% t = time_element(@audiogram.examdate) %>
+    <% t = time_element(@audiogram.examdate.getlocal) %>
     <%= "<input type=\"text\" name=\"t_year\" value=\"#{t[:year]}\" class =\"narrow\">" %>年
     <%= "<input type=\"text\" name=\"t_month\" value=\"#{t[:month]}\" class =\"narrow\">" %>月
     <%= "<input type=\"text\" name=\"t_day\" value=\"#{t[:day]}\" class =\"narrow\">" %>日
