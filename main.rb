@@ -172,8 +172,12 @@ class Main < Sinatra::Base
   put '/patients/:patient_id/audiograms/:id' do # audiograms#update
     @patient = Patient.find(params[:patient_id])
     @audiogram = @patient.audiograms.find(params[:id])
+    examdate_changed = false
     if @audiogram.examdate != Time.local(params[:t_year], params[:t_month], params[:t_day], params[:t_hour], params[:t_min], params[:t_sec])
       @audiogram.examdate = Time.local(params[:t_year], params[:t_month], params[:t_day], params[:t_hour], params[:t_min], params[:t_sec])
+      @audiogram.save
+      examdate_changed = true
+      File::delete("#{Image_root}/#{@audiogram.image_location}") if File.exist?("#{Image_root}/#{@audiogram.image_location}")
     end
 
     if @audiogram.update(select_params(params, [:comment, 
@@ -204,8 +208,20 @@ class Main < Sinatra::Base
       :mask_bc_lt_250_type, :mask_bc_lt_500_type, :mask_bc_lt_1k_type,
         :mask_bc_lt_2k_type, :mask_bc_lt_4k_type, :mask_bc_lt_8k_type,
       :manual_input, :audiometer, :hospital]))
-        File::delete("#{Image_root}/#{@audiogram.image_location}") if File.exist?("#{Image_root}/#{@audiogram.image_location}")
-        build_graph
+
+        exam_year = @audiogram.examdate.strftime("%Y")
+        base_dir = "images/#{ENV['RACK_ENV']}/graphs/#{exam_year}"
+        target_filename = make_filename(base_dir, @audiogram.examdate.getlocal.strftime("%Y%m%d-%H%M%S"))
+        if examdate_changed && File.exist?("./assets/#{target_filename}")
+          FileUtils.mv("./assets/#{target_filename}", "./assets/#{target_filename}.org")
+          build_graph
+          @audiogram.image_location = rename(target_filename)
+          @audiogram.save
+          FileUtils.mv("./assets/#{target_filename}", "./assets/#{@audiogram.image_location}")
+          FileUtils.mv("./assets/#{target_filename}.org", "./assets/#{target_filename}")
+        else
+          build_graph
+        end
       redirect to("/patients/#{@patient.id}/audiograms/#{@audiogram.id}")
     else
       erb :audiograms_edit
@@ -610,6 +626,21 @@ class Main < Sinatra::Base
       end
     else
       return "---"
+    end
+  end
+
+  def rename(filename)
+    files = Dir.glob("./assets/#{filename}*")
+    numbers = Array.new
+    files.each do |f|
+      if match = /\d.+-\d+-(\d+)/.match(f)
+        numbers << match[1].to_i
+      end
+    end
+    if max = numbers.max
+      return filename.gsub(".png", "-#{(max+1).to_s}.png")
+    else
+      return filename.gsub(".png", "-2.png")
     end
   end
 end

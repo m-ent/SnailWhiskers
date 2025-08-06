@@ -305,6 +305,7 @@ describe 'AudiogramsController' do
           put "/patients/#{@patient.id}/audiograms/#{@audiogram_2b_up.id}", params={audiometer: 'audiometer', ac_rt_1k: 90,\
                                                   t_year: @examd_2b_up.year, t_month: @examd_2b_up.month, t_day: @examd_2b_up.day,\
                                                   t_hour: @examd_2b_up.hour , t_min: @examd_2b_up.min , t_sec: @examd_2b_up.sec}
+          @audiogram_2b_up.reload
           _(Digest::MD5.file("./assets/#{@audiogram_2b_up.image_location}")).wont_equal @md5_org
         end
       end
@@ -314,6 +315,7 @@ describe 'AudiogramsController' do
           put "/patients/#{@patient.id}/audiograms/#{@audiogram_2b_up.id}", params={audiometer: 'audiometer', ac_rt_1k: 100, ac_rt_1k_scaleout: true,\
                                                   t_year: @examd_2b_up.year, t_month: @examd_2b_up.month, t_day: @examd_2b_up.day,\
                                                   t_hour: @examd_2b_up.hour , t_min: @examd_2b_up.min , t_sec: @examd_2b_up.sec}
+          @audiogram_2b_up.reload
           _(Digest::MD5.file("./assets/#{@audiogram_2b_up.image_location}")).wont_equal @md5_org
         end
       end
@@ -329,11 +331,23 @@ describe 'AudiogramsController' do
             "#{"%02d" % @examd_2b_up.hour}#{"%02d" % @examd_2b_up.min}#{"%02d" % @examd_2b_up.sec}.png"
         end
 
+        it "変更前後で examdate が変更されること(change examdate through update)" do
+          examdate_pre = @audiogram_2b_up.examdate
+          image_location_pre = @audiogram_2b_up.image_location
+          put "/patients/#{@patient.id}/audiograms/#{@audiogram_2b_up.id}", params={audiometer: 'audiometer', ac_rt_1k: 100,\
+                                                  t_year: @examd_2b_up.year, t_month: (@examd_2b_up.month.to_i + @month_diff), t_day: @examd_2b_up.day,\
+                                                  t_hour: @examd_2b_up.hour , t_min: @examd_2b_up.min , t_sec: @examd_2b_up.sec}
+          @audiogram_2b_up.reload
+          _(@audiogram_2b_up.examdate).wont_equal examdate_pre
+          _(@audiogram_2b_up.image_location).wont_equal image_location_pre
+        end
+
         it "変更前の日時のgraphが消去されること(the graph for pre-changed exam should be deleted)" do
           _(File.exist?("./assets/#{@filename1}")).must_equal true
           put "/patients/#{@patient.id}/audiograms/#{@audiogram_2b_up.id}", params={audiometer: 'audiometer', ac_rt_1k: 100,\
                                                   t_year: @examd_2b_up.year, t_month: (@examd_2b_up.month.to_i + @month_diff), t_day: @examd_2b_up.day,\
                                                   t_hour: @examd_2b_up.hour , t_min: @examd_2b_up.min , t_sec: @examd_2b_up.sec}
+          @audiogram_2b_up.reload
           _(File.exist?("./assets/#{@filename1}")).must_equal false
         end
 
@@ -346,7 +360,24 @@ describe 'AudiogramsController' do
           put "/patients/#{@patient.id}/audiograms/#{@audiogram_2b_up.id}", params={audiometer: 'audiometer', ac_rt_1k: 100,\
                                                   t_year: @examd_2b_up.year, t_month: (@examd_2b_up.month.to_i + @month_diff), t_day: @examd_2b_up.day,\
                                                   t_hour: @examd_2b_up.hour , t_min: @examd_2b_up.min , t_sec: @examd_2b_up.sec}
+          @audiogram_2b_up.reload
           _(File.exist?("./assets/#{@filename2}")).must_equal true
+        end
+
+        it "変更後の日時に対応する検査が存在する場合は、graphの名前の衝突を避けること(avoid collision of the name of the graphs, when same datetime exam exists)" do
+          Dir.glob("./assets/#{@filename2.gsub(".png", "")}*") do |f|
+            puts f
+            File.delete(f)
+          end
+          File.open("./assets/#{@filename2}", 'w') do |f|
+            f.puts "dummy"
+          end
+          put "/patients/#{@patient.id}/audiograms/#{@audiogram_2b_up.id}", params={audiometer: 'audiometer', ac_rt_1k: 100,\
+                                                  t_year: @examd_2b_up.year, t_month: (@examd_2b_up.month.to_i + @month_diff), t_day: @examd_2b_up.day,\
+                                                  t_hour: @examd_2b_up.hour , t_min: @examd_2b_up.min , t_sec: @examd_2b_up.sec}
+          @audiogram_2b_up.reload
+          _(@audiogram_2b_up.image_location).wont_equal @filename2
+          _(File.exist?("./assets/#{@audiogram_2b_up.image_location}")).must_equal true
         end
       end
     end
