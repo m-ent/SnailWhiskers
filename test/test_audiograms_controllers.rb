@@ -352,11 +352,7 @@ describe 'AudiogramsController' do
         end
 
         it "変更後の日時のgraphが作成されること(the graph for post-changed exam should be created)" do
-<<<<<<< HEAD
-          _(File.exist?("./assets/#{@filename2}")).must_equal false
-=======
           File.delete("./assets/#{@filename2}") if File.exist?("./assets/#{@filename2}")
->>>>>>> 018dc7e (audiograms#update: 時刻の取扱い(localtime周り)関連の修正)
           put "/patients/#{@patient.id}/audiograms/#{@audiogram_2b_up.id}", params={audiometer: 'audiometer', ac_rt_1k: 100,\
                                                   t_year: @examd_2b_up.year, t_month: (@examd_2b_up.month.to_i + @month_diff), t_day: @examd_2b_up.day,\
                                                   t_hour: @examd_2b_up.hour , t_min: @examd_2b_up.min , t_sec: @examd_2b_up.sec}
@@ -366,7 +362,6 @@ describe 'AudiogramsController' do
 
         it "変更後の日時に対応する検査が存在する場合は、graphの名前の衝突を避けること(avoid collision of the name of the graphs, when same datetime exam exists)" do
           Dir.glob("./assets/#{@filename2.gsub(".png", "")}*") do |f|
-            puts f
             File.delete(f)
           end
           File.open("./assets/#{@filename2}", 'w') do |f|
