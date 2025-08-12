@@ -310,7 +310,7 @@ describe 'AudiogramsController' do
         end
       end
 
-      describe "Scale out を付与する場合(by add a scale out flag)" do
+      describe "Scale out を付与する場合(by adding a scale out flag)" do
         it "変更前と異なるgraphが作成されること(the graph should be changed)" do
           put "/patients/#{@patient.id}/audiograms/#{@audiogram_2b_up.id}", params={audiometer: 'audiometer', ac_rt_1k: 100, ac_rt_1k_scaleout: true,\
                                                   t_year: @examd_2b_up.year, t_month: @examd_2b_up.month, t_day: @examd_2b_up.day,\
@@ -373,6 +373,42 @@ describe 'AudiogramsController' do
           @audiogram_2b_up.reload
           _(@audiogram_2b_up.image_location).wont_equal @filename2
           _(File.exist?("./assets/#{@audiogram_2b_up.image_location}")).must_equal true
+        end
+      end
+    end
+
+    describe "Scaleout を含む既存のaudiogramのデータを update する際に(when update audiogram data w/ scaleout number)" do
+      before do
+        Audiogram.destroy_all
+        examdate = [2025, 1, 1, 10, 30] # 2025/1/1 10:30
+        post_data = {:hp_id => valid_id?(@patient.hp_id), \
+                  :year => examdate[0], :month => examdate[1], :day => examdate[2], \
+                  :hh => examdate[3], :mm => examdate[4], \
+                  :equip_name => "audiometer", :datatype => "audiogram", :comment => "", \
+                  :ra_1k => "100_"} # ra_1k は 100 の後に "_" がついているので、scaleout 値を表している
+        post "/audiograms/manual_create", post_data
+        @audiogram_2b_up =  Audiogram.last  # "audiogram to be updated"
+        @examd_2b_up = @audiogram_2b_up.examdate.getlocal
+        @md5_org = Digest::MD5.file("./assets/#{@audiogram_2b_up.image_location}")
+      end
+
+      describe "数値をそのままに、Scaleout を除去する場合(by removing a scaleout flag without changing the figure)" do
+        it "変更前と異なるgraphが作成されること(the graph should be changed)" do
+          put "/patients/#{@patient.id}/audiograms/#{@audiogram_2b_up.id}", params={audiometer: 'audiometer', ac_rt_1k: 100, ac_rt_1k_scaleout: false,\
+                                                  t_year: @examd_2b_up.year, t_month: @examd_2b_up.month, t_day: @examd_2b_up.day,\
+                                                  t_hour: @examd_2b_up.hour , t_min: @examd_2b_up.min , t_sec: @examd_2b_up.sec}
+          @audiogram_2b_up.reload
+          _(Digest::MD5.file("./assets/#{@audiogram_2b_up.image_location}")).wont_equal @md5_org
+        end
+      end
+
+      describe "Scaleout flagはそのままに、数値を除去する場合(by removing a figure without changing the scaleout flag)" do
+        it "scaleout flag も false になること(the scaleout flag should be cleared)" do
+          put "/patients/#{@patient.id}/audiograms/#{@audiogram_2b_up.id}", params={audiometer: 'audiometer', ac_rt_1k: nil, ac_rt_1k_scaleout: true,\
+                                                  t_year: @examd_2b_up.year, t_month: @examd_2b_up.month, t_day: @examd_2b_up.day,\
+                                                  t_hour: @examd_2b_up.hour , t_min: @examd_2b_up.min , t_sec: @examd_2b_up.sec}
+          @audiogram_2b_up.reload
+          _(@audiogram_2b_up.ac_rt_1k_scaleout).wont_equal true
         end
       end
     end

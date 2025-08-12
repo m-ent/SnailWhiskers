@@ -56,7 +56,7 @@
           <td><%= "<input type=\"text\" name=\"ac_rt_#{freq}\"
             value=\"#{eval("@audiogram.ac_rt_#{freq}")}\" class=\"narrow\">" %>
               <%= "<input type=\"checkbox\" name=\"ac_rt_#{freq}_scaleout\"
-            value=\"#{eval("@audiogram.ac_rt_#{freq}_scaleout ? \"true\" : \"\"")}\" #{eval("\"checked\" if @audiogram.ac_rt_#{freq}_scaleout")}>" %></td>
+            value=\"true\" #{eval("\"checked\" if @audiogram.ac_rt_#{freq}_scaleout")}>" %></td>
         </div>
       <% end %>
     </tr>
@@ -76,7 +76,7 @@
           <td><%= "<input type=\"text\" name=\"ac_lt_#{freq}\"
             value=\"#{eval("@audiogram.ac_lt_#{freq}")}\" class=\"narrow\">" %>
               <%= "<input type=\"checkbox\" name=\"ac_lt_#{freq}_scaleout\"
-          value=\"#{eval("@audiogram.ac_lt_#{freq}_scaleout") ? "true" : ""}\">" %></td>
+            value=\"true\" #{eval("\"checked\" if @audiogram.ac_lt_#{freq}_scaleout")}>" %></td>
         </div>
       <% end %>
     </tr>
@@ -98,7 +98,7 @@
           <td><%= "<input type=\"text\" name=\"bc_rt_#{freq}\"
             value=\"#{eval("@audiogram.bc_rt_#{freq}")}\" class=\"narrow\">" %>
               <%= "<input type=\"checkbox\" name=\"bc_rt_#{freq}_scaleout\"
-          value=\"#{eval("@audiogram.bc_rt_#{freq}_scaleout") ? "true" : ""}\">" %></td>
+            value=\"true\" #{eval("\"checked\" if @audiogram.bc_rt_#{freq}_scaleout")}>" %></td>
         </div>
       <% end %>
     </tr>
@@ -120,7 +120,7 @@
           <td><%= "<input type=\"text\" name=\"bc_lt_#{freq}\"
             value=\"#{eval("@audiogram.bc_lt_#{freq}")}\" class=\"narrow\">" %>
               <%= "<input type=\"checkbox\" name=\"bc_lt_#{freq}_scaleout\"
-          value=\"#{eval("@audiogram.bc_lt_#{freq}_scaleout") ? "true" : ""}\">" %></td>
+            value=\"true\" #{eval("\"checked\" if @audiogram.bc_lt_#{freq}_scaleout")}>" %></td>
         </div>
       <% end %>
     </tr>

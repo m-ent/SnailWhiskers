@@ -95,7 +95,7 @@ class Main < Sinatra::Base
 
   get '/patients_by_id/:hp_id' do # patients_by_id
     if (val_id = valid_id?(params[:hp_id])) 
-      @patient = Patient.where(hp_id: val_id).take(1)
+      @patient = Patient.where(hp_id: val_id).take(1)[0]
       if @patient
         redirect to("/patients/#{@patient.id}")
       else
@@ -212,6 +212,33 @@ class Main < Sinatra::Base
         exam_year = @audiogram.examdate.strftime("%Y")
         base_dir = "images/#{ENV['RACK_ENV']}/graphs/#{exam_year}"
         target_filename = make_filename(base_dir, @audiogram.examdate.getlocal.strftime("%Y%m%d-%H%M%S"))
+        @audiogram.ac_rt_125_scaleout = nil unless @audiogram.ac_rt_125
+        @audiogram.ac_rt_250_scaleout = nil unless @audiogram.ac_rt_250
+        @audiogram.ac_rt_500_scaleout = nil unless @audiogram.ac_rt_500
+        @audiogram.ac_rt_1k_scaleout  = nil unless @audiogram.ac_rt_1k
+        @audiogram.ac_rt_2k_scaleout  = nil unless @audiogram.ac_rt_2k
+        @audiogram.ac_rt_4k_scaleout  = nil unless @audiogram.ac_rt_4k
+        @audiogram.ac_rt_8k_scaleout  = nil unless @audiogram.ac_rt_8k
+        @audiogram.ac_lt_125_scaleout = nil unless @audiogram.ac_lt_125
+        @audiogram.ac_lt_250_scaleout = nil unless @audiogram.ac_lt_250
+        @audiogram.ac_lt_500_scaleout = nil unless @audiogram.ac_lt_500
+        @audiogram.ac_lt_1k_scaleout  = nil unless @audiogram.ac_lt_1k
+        @audiogram.ac_lt_2k_scaleout  = nil unless @audiogram.ac_lt_2k
+        @audiogram.ac_lt_4k_scaleout  = nil unless @audiogram.ac_lt_4k
+        @audiogram.ac_lt_8k_scaleout  = nil unless @audiogram.ac_lt_8k
+        @audiogram_bc_rt_250_scaleout = nil unless @audiogram_bc_rt_250
+        @audiogram_bc_rt_500_scaleout = nil unless @audiogram_bc_rt_500
+        @audiogram_bc_rt_1k_scaleout  = nil unless @audiogram_bc_rt_1k
+        @audiogram_bc_rt_2k_scaleout  = nil unless @audiogram_bc_rt_2k
+        @audiogram_bc_rt_4k_scaleout  = nil unless @audiogram_bc_rt_4k
+        @audiogram_bc_rt_8k_scaleout  = nil unless @audiogram_bc_rt_8k
+        @audiogram.bc_lt_250_scaleout = nil unless @audiogram.bc_lt_250
+        @audiogram.bc_lt_500_scaleout = nil unless @audiogram.bc_lt_500
+        @audiogram.bc_lt_1k_scaleout  = nil unless @audiogram.bc_lt_1k
+        @audiogram.bc_lt_2k_scaleout  = nil unless @audiogram.bc_lt_2k
+        @audiogram.bc_lt_4k_scaleout  = nil unless @audiogram.bc_lt_4k
+        @audiogram.bc_lt_8k_scaleout  = nil unless @audiogram.bc_lt_8k
+
         if examdate_changed && File.exist?("./assets/#{target_filename}")
           FileUtils.mv("./assets/#{target_filename}", "./assets/#{target_filename}.org")
           build_graph
