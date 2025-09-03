@@ -402,7 +402,11 @@ class Main < Sinatra::Base
       returndata = Array.new
       audiograms.each do |a|
         p = Patient.find(a.patient_id)
-        returndata << {"ID" => p.hp_id, "time" => a.examdate.localtime.strftime("%Y-%m-%d %H:%M"), "thumbnail" => a.image_location.sub("graphs", "thumbnails")}
+        returndata << {"ID" => p.hp_id,
+                       "ID_link" => "patients/#{p.id}",
+                       "time" => a.examdate.localtime.strftime("%Y-%m-%d %H:%M"),
+                       "thumbnail" => a.image_location.sub("graphs", "thumbnails"),
+                       "audiogram_link" => "patients/#{p.id}/audiograms/#{a.id}"}
       end
     else
       returndata = "Error"

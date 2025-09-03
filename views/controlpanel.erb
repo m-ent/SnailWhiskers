@@ -31,15 +31,8 @@
 <br/>
 <button id="exams_today">Today's Exams</button>
 
-<!-- form method="get" action="/audiograms/exams_of_the_day">
-  <input type="hidden" name="date" value="today">
-  <input type="submit" value="Today's Exams">
-</form -->
-
-
 <table id="show_result" border="1">
-  <tbody>
-    <tr><th>ID</th><th>date</th></tr>
+  <tbody id="result_table">
   </tbody>
 </table>
 
@@ -47,7 +40,6 @@
   $(function(){
     // exam_today ボタンをクリックしたら発動
     $('#exams_today').on('click',function(){
-
       $.ajax({
         url:'/audiograms/exams_of_the_day',
         type:'GET',
@@ -57,21 +49,18 @@
         .done(
           function(response) {
             var audiograms = response.audiograms;
+            $('#result_table').empty();
+            var header = "<tr><th>ID</th><th>date</th><th>thumbnail</th></tr>"
+            $('#result_table').append(header);
             for(var i in audiograms){
-              var html = "<tr><td>" + audiograms[i].ID + "</td><td>" + audiograms[i].date +"</td></tr>";
-              $('tbody').append(html);
+              var html = "<tr><td><a href=" + audiograms[i].ID_link + ">" + audiograms[i].ID + "</a></td><td><a href=" + audiograms[i].audiogram_link + ">" + audiograms[i].time +"</a></td><td><a href=" + audiograms[i].audiogram_link + "><img src=" + audiograms[i].thumbnail + "></a></td></tr>";
+              $('#result_table').append(html);
             };
           });
-
     }); 
-  });
-</script>
 
-<script type="text/javascript">
-  $(function(){
     // exam_of_day ボタンをクリックしたら発動
     $('#exams_of_day').on('click',function(){
-
       $.ajax({
         url:'/audiograms/exams_of_the_day',
         type:'GET',
@@ -81,12 +70,15 @@
         .done(
           function(response) {
             var audiograms = response.audiograms;
+            $('#result_table').empty();
+            var header = "<tr><th>ID</th><th>date</th><th>thumbnail</th></tr>"
+            $('#result_table').append(header);
             for(var i in audiograms){
-              var html = "<tr><td>" + audiograms[i].ID + "</td><td>" + audiograms[i].date +"</td></tr>";
-              $('tbody').append(html);
+              var html = "<tr><td><a href=" + audiograms[i].ID_link + ">" + audiograms[i].ID + "</a></td><td><a href=" + audiograms[i].audiogram_link + ">" + audiograms[i].time +"</a></td><td><a href=" + audiograms[i].audiogram_link + "><img src=" + audiograms[i].thumbnail + "></a></td></tr>";
+              $('#result_table').append(html);
             };
           });
-
     });
   });
+  
 </script>
