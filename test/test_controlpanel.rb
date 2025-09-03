@@ -15,5 +15,9 @@ describe "GET controlpanel (/controlpanel) : view" do
   it "audiograms/new への link が含まれること(has a link to audiograms#new)" do
     _(@response.body).must_include "audiograms/new"
   end
+
+  it "audiograms/exam_of_the_day への link が含まれること(has a link to audiograms#exams_of_the_day)" do
+    _(@response.body).must_include "audiograms/exams_of_the_day"
+  end
 end
 

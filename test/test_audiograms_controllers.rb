@@ -878,4 +878,50 @@ describe 'AudiogramsController' do
       _(Digest::MD5.file("./assets/#{Audiogram.last.image_location}")).wont_equal Digest::MD5.file("./assets/parts/background_audiogram#{Graph_size}.png")
     end
   end
+
+  describe "GET audiograms#exams_of_the_day (/audiogams/exams_of_the_day)" do
+    before do
+      Patient.destroy_all
+      Audiogram.destroy_all
+      hp_ids = [valid_id?("19"), valid_id?("27")]
+      time_now = Time.now.localtime
+      examdates = [[2025, 1, 1, 10, 30], [time_now.year, time_now.month, time_now.day, time_now.hour, time_now.min]]
+      @today = "#{"%04d" % examdates[1][0]}-#{"%02d" % examdates[1][1]}-#{"%02d" % examdates[1][2]}"
+      4.times do |i|
+        p = i / 2
+        d = i % 2
+        post_data = {:hp_id => hp_ids[p], \
+                  :year => examdates[d][0], :month => examdates[d][1], :day => examdates[d][2], \
+                  :hh => examdates[d][3], :mm => examdates[d][4] + i, \
+                  :equip_name => "audiometer", :datatype => "audiogram", :comment => "", \
+                  :ra_1k => "100_"} # ra_1k は 100 の後に "_" がついているので、scaleout 値を表している
+        post "/audiograms/manual_create", post_data
+      end
+    end
+
+    it "日付引数に正しい数字が入っていた場合、その日付のaudiogramsを表示する(when valid argument, shows the audiograms of the day)" do
+      get "/audiograms/exams_of_the_day", {:date => "20250101"}
+      element_checker = true
+      JSON.parse(last_response.body)["audiograms"].each do |audiogram|
+        element_checker &&= (audiogram["time"].include?("2025-01-01"))
+      end
+      _(element_checker).must_equal true
+      _(JSON.parse(last_response.body)["audiograms"].length).must_equal 2
+    end
+
+    it "日付引数に誤った数字が入っていた場合、Error表示をする(when invalid argument, shows an error message)" do
+      get "/audiograms/exams_of_the_day", {:date => "20251301"}
+      _(JSON.parse(last_response.body)["audiograms"]).must_equal "Error"
+    end
+
+    it "日付引数に today が入っていた場合、本日のaudiogramsを表示する(when valid argument, shows today's audiograms)" do
+      get "/audiograms/exams_of_the_day", {:date => "today"}
+      element_checker = true
+      JSON.parse(last_response.body)["audiograms"].each do |audiogram|
+        element_checker &&= (audiogram["time"].include?(@today))
+      end
+      _(element_checker).must_equal true
+      _(JSON.parse(last_response.body)["audiograms"].length).must_equal 2
+    end
+  end
 end

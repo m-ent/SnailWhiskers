@@ -381,6 +381,37 @@ class Main < Sinatra::Base
     end
   end
 
+  get '/audiograms/exams_of_the_day' do #audiograms#exams_all_rebuild
+    from = Time.new
+    case (date = params[:date])
+    when "today"
+      today = Time.now.localtime
+      from = Time.local(today.year, today.month, today.day) # to = from + 86399
+    when /\d{8}/
+      begin
+        from = Time.local(date[0..3].to_s, date[4..5].to_s, date[6..7].to_s)
+      rescue
+        from = nil
+      end
+    else
+      from = nil
+    end
+    returndata = nil
+    if from # 日付指定が有効な場合
+      audiograms = Audiogram.where(examdate: from..(from + 86399))
+      returndata = Array.new
+      audiograms.each do |a|
+        p = Patient.find(a.patient_id)
+        returndata << {"ID" => p.hp_id, "time" => a.examdate.localtime.strftime("%Y-%m-%d %H:%M"), "thumbnail" => a.image_location.sub("graphs", "thumbnails")}
+      end
+    else
+      returndata = "Error"
+    end
+    data = {"audiograms" => returndata}
+    content_type :json
+    data.to_json
+  end
+
   private
   def select_params(params, keys)
     h = Hash.new

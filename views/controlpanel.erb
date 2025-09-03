@@ -1,3 +1,6 @@
+<!--jQuery召喚-->
+<script type="text/javascript" src="js/jquery-3.7.1.min.js"></script>
+
 <%= "<!-- /dashboard -->" %>
 
 <% if flash[:notice] %>
@@ -16,6 +19,74 @@
   <input type="submit" value="Manual Input">
 </form>
 
+<!--button onclick="location.href='/audiograms/all_rebuild'">All Rebuild!</button -->
 
-<!--button onclick="location.href='/audiograms/all_rebuild'">All Rebuild!</button>
+<h2>Exam of the day</h2>
+<button id="exams_of_day">Search Exams</button>
+<form method="get" action="/audiograms/exams_of_the_day">
+  <!-- input type="submit" value="Search Exams" -->
+   => 検査日付(YYYYMMDD形式): 
+  <input type="text" name="date" id="date">
+</form>
+<br/>
+<button id="exams_today">Today's Exams</button>
 
+<!-- form method="get" action="/audiograms/exams_of_the_day">
+  <input type="hidden" name="date" value="today">
+  <input type="submit" value="Today's Exams">
+</form -->
+
+
+<table id="show_result" border="1">
+  <tbody>
+    <tr><th>ID</th><th>date</th></tr>
+  </tbody>
+</table>
+
+<script type="text/javascript">
+  $(function(){
+    // exam_today ボタンをクリックしたら発動
+    $('#exams_today').on('click',function(){
+
+      $.ajax({
+        url:'/audiograms/exams_of_the_day',
+        type:'GET',
+        dataType: "json",
+        data:{ 'date':'today' }
+      })
+        .done(
+          function(response) {
+            var audiograms = response.audiograms;
+            for(var i in audiograms){
+              var html = "<tr><td>" + audiograms[i].ID + "</td><td>" + audiograms[i].date +"</td></tr>";
+              $('tbody').append(html);
+            };
+          });
+
+    }); 
+  });
+</script>
+
+<script type="text/javascript">
+  $(function(){
+    // exam_of_day ボタンをクリックしたら発動
+    $('#exams_of_day').on('click',function(){
+
+      $.ajax({
+        url:'/audiograms/exams_of_the_day',
+        type:'GET',
+        dataType: "json",
+        data:{ 'date':$('#date').val() }
+      })
+        .done(
+          function(response) {
+            var audiograms = response.audiograms;
+            for(var i in audiograms){
+              var html = "<tr><td>" + audiograms[i].ID + "</td><td>" + audiograms[i].date +"</td></tr>";
+              $('tbody').append(html);
+            };
+          });
+
+    });
+  });
+</script>
