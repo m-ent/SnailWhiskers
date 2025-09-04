@@ -116,7 +116,7 @@ describe 'PatientsController' do
     describe 'audiogram の表示に関して(about displaying the audiogram:)' do
       def create_audiogram(time, ac_rt_500, ac_rt_1k, ac_rt_2k)
         Audiogram.create!(
-          examdate: Time.now, comment: "Comment",
+          examdate: time, comment: "Comment",
           image_location: "graphs_some_directory",
           ac_rt_500: ac_rt_500, ac_rt_1k: ac_rt_1k, ac_rt_2k: ac_rt_2k,
           ac_lt_500: 15, ac_lt_1k: 25, ac_lt_2k: 35,
@@ -131,12 +131,15 @@ describe 'PatientsController' do
       end
 
       it 'patients が 1つの audiogram を持つときに、その Audiogram の情報が表示されること(shows information about the audiogram when the patient has only one audiogram)' do
+        y, m, d = 2025, 1, 1 # 2025/1/1 00:00 JST == 2024/12/31 15:00 UTC
+        t = Time.local(y, m, d, 0, 0)
         @patient.audiograms = []
-        @patient.audiograms << create_audiogram(Time.now, 10, 20, 30)
+        @patient.audiograms << create_audiogram(t, 10, 20, 30)
         get "/patients/#{@patient.id}"
         _(last_response.ok?).must_equal true
         _(last_response.body).must_include "1 exam"
         _(last_response.body).must_include "R: 20"
+        _(last_response.body).must_include "#{"%04d" % y}/#{"%02d" % m}/#{"%02d" % d}"
       end
 
       it 'patients が 6つの audiogram を持つときに、最も古い Audiogram の情報が表示されないこと(shows no information about the oldest audiogram, when the patient has 6 audiograms)' do

@@ -14,7 +14,7 @@
   <table>
     <tr>
       <% recent.each do |a| %>
-        <td id="recent<%= i %>"><%= a.examdate.strftime("%Y/%m/%d") %></td>
+        <td id="recent<%= i %>"><%= a.examdate.getlocal.strftime("%Y/%m/%d") %></td>
         <% i += 1 %>
       <% end %>
     </tr>
